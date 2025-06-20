@@ -70,6 +70,9 @@ public class ProductController {
             productService.insert(product);
             ctx.status(201);
             ctx.json(new ApiResponse("Producto creado exitosamente"));
+        } catch (IllegalArgumentException e) {
+            ctx.status(409);
+            ctx.json(new ApiResponse("Error: " + e.getMessage()));
         } catch (Exception e) {
             ctx.status(400);
             ctx.json(new ApiResponse("Error al crear producto: " + e.getMessage()));

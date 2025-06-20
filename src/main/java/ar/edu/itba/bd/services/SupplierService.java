@@ -248,6 +248,11 @@ public class SupplierService {
     }
 
     public void insert(Supplier s) {
+        Document existingSupplier = supplierCollection.find(new Document("id", s.id())).first();
+        if (existingSupplier != null) {
+            throw new IllegalArgumentException("Ya existe un proveedor con el ID: " + s.id());
+        }
+        
         Document doc = new Document()
                 .append("id", s.id())
                 .append("taxId", s.taxId())
@@ -262,7 +267,7 @@ public class SupplierService {
 
     public boolean update(String id, Supplier s) {
         Document update = new Document("$set", new Document()
-                .append("id", s.id())
+                // .append("id", s.id())    // No queremos actualizar el ID
                 .append("taxId", s.taxId())
                 .append("companyName", s.companyName())
                 .append("companyType", s.companyType())

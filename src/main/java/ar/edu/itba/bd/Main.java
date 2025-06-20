@@ -4,8 +4,8 @@ import ar.edu.itba.bd.controllers.OrderController;
 import ar.edu.itba.bd.controllers.ProductController;
 import ar.edu.itba.bd.controllers.PingController;
 import ar.edu.itba.bd.controllers.SupplierController;
-import ar.edu.itba.bd.models.Order;
 import io.javalin.Javalin;
+import ar.edu.itba.bd.utils.CSVLoader;
 
 public class Main {
 
@@ -14,16 +14,20 @@ public class Main {
 
         // Ping endpoint
         app.get("/ping", PingController::ping);
+        app.get("/load-data", (ctx) -> {
+            new CSVLoader().loadAllData();
+            ctx.status(200);
+        });
 
         // ----------------- Supplier routes -----------------
         // Rutas específicas primero
-        app.get("/suppliers/phonesFromActive", SupplierController::getAllActive);
-        app.get("/suppliers/phonesFromTech", SupplierController::getAllFromTech);
+        app.get("/suppliers/active/phones", SupplierController::getAllActive);
+        app.get("/suppliers/tech/phones", SupplierController::getAllFromTech);
         app.get("/suppliers/phones", SupplierController::getSupplierAndEachPhone);
-        app.get("/suppliers/suppliersWithOrders", SupplierController::getSuppliersWithOrders);
-        app.get("/suppliers/suppliersWithOrdersSummary", SupplierController::getAllSuppliersWithOrderSummary);
+        app.get("/suppliers/with-orders", SupplierController::getSuppliersWithOrders);
+        app.get("/suppliers/with-orders-summary", SupplierController::getAllSuppliersWithOrderSummary);
         app.get("/suppliers/without-orders", SupplierController::getSuppliersWithoutOrders);
-        app.get("/suppliers/activeAndUnauthorized", SupplierController::getSuppliersActiveAndUnauthorizedSuppliers);
+        app.get("/suppliers/active-unauthorized", SupplierController::getSuppliersActiveAndUnauthorizedSuppliers);
 
         // CRUD
         app.get("/suppliers", SupplierController::getAllSuppliers);
@@ -35,8 +39,8 @@ public class Main {
         // ----------------- Order routes -----------------
 
         // Rutas específicas primero
-        app.get("/orders/byTaxId", OrderController::getOrdersBySupplierTaxId);
-        app.get("/orders/coto-products", OrderController::getOrdersWithCotoProducts);
+        app.get("/orders/by-supplier-tax-id", OrderController::getOrdersBySupplierTaxId);
+        app.get("/orders/with-coto-products", OrderController::getOrdersWithCotoProducts);
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
         app.get("/orders/coto", OrderController::getOrdersWithCotoProducts);
@@ -49,8 +53,8 @@ public class Main {
         // ----------------- Product routes -----------------
 
         // Rutas específicas primero
-        app.get("/products/withatleastoneorder", ProductController::getAllWithAtLeastOneOrder);
-        app.get("/products/productsNotOrdered", ProductController::getAllProductsNotOrdered);
+        app.get("/products/with-orders", ProductController::getAllWithAtLeastOneOrder);
+        app.get("/products/without-orders", ProductController::getAllProductsNotOrdered);
 
         // CRUD
         app.get("/products", ProductController::getAllProducts);

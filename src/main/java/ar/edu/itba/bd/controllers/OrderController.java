@@ -76,6 +76,9 @@ public class OrderController {
             orderService.insert(order);
             ctx.status(201);
             ctx.json(new ApiResponse("Orden creada exitosamente"));
+        } catch (IllegalArgumentException e) {
+            ctx.status(409);
+            ctx.json(new ApiResponse("Error: " + e.getMessage()));
         } catch (Exception e) {
             ctx.status(400);
             ctx.json(new ApiResponse("Error al crear orden: " + e.getMessage()));
