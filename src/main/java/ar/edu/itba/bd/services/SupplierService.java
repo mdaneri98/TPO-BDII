@@ -165,6 +165,20 @@ public class SupplierService {
         return suppliersWithRegisterOrderDTOS;
     }
 
+    public List<Supplier> findSuppliersWithoutOrders() {
+        List<String> suppliersWithOrders = orderCollection.distinct("supplierId", String.class)
+                .into(new ArrayList<>());
+
+        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
+        for (Document doc : supplierCollection.find(new Document("id", new Document("$nin", suppliersWithOrders)))) {
+
+            Supplier s = fromDocument(doc);
+            uniqueSuppliers.putIfAbsent(s.id(), s);
+        }
+
+        return new ArrayList<>(uniqueSuppliers.values());
+    }
+
 
     // ------------------------------------ CRUD ------------------------------------
 
@@ -249,19 +263,6 @@ public class SupplierService {
             }
         }
         return phoneDocs;
-    }
-
-    public List<Supplier> findSuppliersWithoutOrders() {
-        List<String> cuitWithOrders = orderCollection.distinct("supplierId", String.class)
-                .into(new ArrayList<>());
-
-        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
-        for (Document doc : supplierCollection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
-            Supplier s = fromDocument(doc);
-            uniqueSuppliers.putIfAbsent(s.id(), s);
-        }
-
-        return new ArrayList<>(uniqueSuppliers.values());
     }
 
 }
