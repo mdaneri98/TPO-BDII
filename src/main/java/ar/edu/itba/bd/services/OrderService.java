@@ -16,7 +16,8 @@ import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.collection;
@@ -125,36 +126,43 @@ public class OrderService {
     public List<OrderSummaryDTO> getOrderSummariesSortedByDate() {
         List<OrderSummaryDTO> summaries = new ArrayList<>();
 
-        List<Bson> pipeline = List.of(
-                Aggregates.lookup("supplier", "supplierId", "id", "supplierInfo"),
-                Aggregates.unwind("$supplierInfo"),
-                Aggregates.project(new Document()
-                        .append("orderId", "$id")
-                        .append("date", "$date")
-                        .append("companyName", "$supplierInfo.companyName")
-                        .append("totalWithoutTax", "$totalWithoutTax")
-                        .append("totalWithTax", new Document("$add", List.of("$totalWithoutTax", "$tax")))
-                ),
-                Aggregates.group("$orderId", List.of(
-                        new BsonField("orderId", new Document("$first", "$orderId")),
-                        new BsonField("date", new Document("$first", "$date")),
-                        new BsonField("companyName", new Document("$first", "$companyName")),
-                        new BsonField("totalWithoutTax", new Document("$first", "$totalWithoutTax")),
-                        new BsonField("totalWithTax", new Document("$first", "$totalWithTax"))
-                )),
+        // Map de supplierId → companyName para acceso rápido
+        Map<String, String> supplierIdToCompanyName = new HashMap<>();
+        supplierCollection.find().forEach(doc -> {
+            String id = doc.getString("id");
+            String companyName = doc.getString("companyName");
+            if (id != null && companyName != null) {
+                supplierIdToCompanyName.put(id, companyName);
+            }
+        });
 
-                Aggregates.sort(new Document("date", 1))
-        );
+        // Recorrer las órdenes
+        orderCollection.find().forEach(doc -> {
+            String orderId = doc.getString("id");
+            String date = doc.getString("date");
+            String supplierId = doc.getString("supplierId");
 
-        orderCollection.aggregate(pipeline).forEach(doc -> {
+            Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
+            Number taxNum = doc.get("tax", Number.class);
+
+            double totalWithoutTax = totalWithoutTaxNum != null ? totalWithoutTaxNum.doubleValue() : 0.0;
+            double tax = taxNum != null ? taxNum.doubleValue() : 0.0;
+            double totalWithTax = totalWithoutTax + tax;
+
+            String companyName = supplierIdToCompanyName.getOrDefault(supplierId, "Desconocido");
+
             summaries.add(new OrderSummaryDTO(
-                    doc.getString("orderId"),
-                    doc.getString("date"),
-                    doc.getString("companyName"),
-                    doc.getDouble("totalWithoutTax"),
-                    doc.getDouble("totalWithTax")
+                    orderId,
+                    date,
+                    companyName,
+                    totalWithoutTax,
+                    totalWithTax
             ));
         });
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+
+        summaries.sort(Comparator.comparing(dto -> LocalDate.parse(dto.getDate(), formatter)));
 
         return summaries;
     }
