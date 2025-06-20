@@ -17,8 +17,7 @@ public class OrderController {
 
     public static void findOrdersBySupplierTaxId(Context ctx) {
         try {
-            String taxId = ctx.pathParam("taxId");
-
+            String taxId = "30660608175";
             List<OrderDTO> orders = orderService.findOrdersBySupplierTaxId(taxId);
             ctx.json(new ApiResponse("Órdenes obtenidas exitosamente", orders));
         } catch (Exception e) {

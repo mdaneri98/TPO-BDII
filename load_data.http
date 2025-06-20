@@ -180,7 +180,7 @@ Content-Type: application/json
   "id": "2",
   "supplierId": "22",
   "date": "2024-01-26",
-  "totalWithoutTax": 0.0,
+  "totalWithoutTax": 100.0,
   "tax": 21.0,
   "orderDetails": [
     {

@@ -33,26 +33,10 @@ public class ProductService {
 
     //ejercicio 8
     public List<Product> findAllWithAtLeastOneOrder() {
-
         List<Bson> pipeline = List.of(
-                Aggregates.lookup("orders", "id", "orderDetails.productId", "orders"),
-                /*
-                    {
-                      "id": "P1",
-                      "name": "Producto 1",
-                      "orders": [
-                        {
-                          "_id": "O1",
-                          "orderDetails": [
-                            { "productId": "P1", "quantity": 3 },
-                            { "productId": "P2", "quantity": 1 }
-                          ]
-                        }
-                      ]
-                    }
-                * */
+                Aggregates.lookup("order", "id", "orderDetails.productId", "matchedOrders"),
                 Aggregates.match(Filters.expr(
-                        new Document("$gt", List.of(new Document("$size", "$orders"), 0))
+                        new Document("$gt", List.of(new Document("$size", "$matchedOrders"), 0))
                 ))
         );
 

@@ -21,10 +21,10 @@ public class Main {
         app.get("/suppliers/phones", SupplierController::getSupplierAndEachPhone);
         app.get("/suppliers/suppliersWithOrders", SupplierController::getSuppliersWithOrders);
         app.get("/suppliers/suppliersWithOrdersSummary", SupplierController::getAllSuppliersWithOrderSummary);
+        app.get("/suppliers/without-orders", SupplierController::getSuppliersWithoutOrders);
 
         // CRUD
         app.get("/suppliers", SupplierController::getAllSuppliers);
-        app.get("/suppliers/without-orders", SupplierController::getSuppliersWithoutOrders);
         app.get("/suppliers/{id}", SupplierController::getSupplierById);
         app.post("/suppliers", SupplierController::createSupplier);
         app.put("/suppliers/{id}", SupplierController::updateSupplier);
@@ -33,7 +33,7 @@ public class Main {
         // ----------------- Order routes -----------------
 
         // Rutas específicas primero
-        app.get("/orders/byTaxId/{taxId}", OrderController::findOrdersBySupplierTaxId);
+        app.get("/orders/byTaxId", OrderController::findOrdersBySupplierTaxId);
 
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
@@ -44,6 +44,10 @@ public class Main {
 
         // ----------------- Product routes -----------------
 
+        // Rutas específicas primero
+        app.get("/products/withatleastoneorder", ProductController::getAllWithAtLeastOneOrder);
+
+        // CRUD
         app.get("/products", ProductController::getAllProducts);
         app.get("/products/{id}", ProductController::getProductById);
         app.post("/products", ProductController::createProduct);

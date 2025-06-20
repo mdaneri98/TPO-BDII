@@ -12,6 +12,20 @@ public class ProductController {
     private static final ProductService productService = new ProductService();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    // ----------------------------------- NEEDS ------------------------------------
+
+    public static void getAllWithAtLeastOneOrder(Context ctx) {
+        try {
+            List<Product> products = productService.findAllWithAtLeastOneOrder();
+            ctx.json(new ApiResponse("Productos obtenidos exitosamente", products));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener productos: " + e.getMessage()));
+        }
+    }
+
+    // ------------------------------------ CRUD ------------------------------------
+
     public static void getAllProducts(Context ctx) {
         try {
             List<Product> products = productService.findAll();

@@ -252,10 +252,7 @@ public class SupplierService {
     }
 
     public List<Supplier> findSuppliersWithoutOrders() {
-        MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        MongoCollection<Document> orders = db.getCollection("order");
-
-        List<String> cuitWithOrders = orders.distinct("supplierId", String.class)
+        List<String> cuitWithOrders = orderCollection.distinct("supplierId", String.class)
                 .into(new ArrayList<>());
 
         Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
