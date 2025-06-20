@@ -41,7 +41,7 @@ public class Main {
         // Rutas específicas primero
         app.get("/orders/by-supplier-tax-id", OrderController::getOrdersBySupplierTaxId);
         app.get("/orders/with-coto-products", OrderController::getOrdersWithCotoProducts);
-        app.get("/orders/summary", OrderController::getOrderSummaries);
+        app.get("/orders/detailed-summary", OrderController::getOrderSummaries);
 
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
