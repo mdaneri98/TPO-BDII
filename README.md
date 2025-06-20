@@ -76,6 +76,7 @@ curl -X POST http://localhost:7000/load-data
 
 - `GET /orders/by-supplier-tax-id` - **Ejercicio 7**: Órdenes por taxId del proveedor
 - `GET /orders/with-coto-products` - **Ejercicio 8**: Órdenes que contienen productos de marca COTO
+- `GET /orders/detailed-summary` - **Ejercicio 10**: Órdenes ordenadas por fecha (totales con/sin impuestos)
 
 #### CRUD Básico
 - `GET /orders` - Obtener todas las órdenes
