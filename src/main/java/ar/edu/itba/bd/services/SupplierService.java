@@ -98,14 +98,6 @@ public class SupplierService {
             }
         }
         return suppliers;
-        /*Bson filter = Filters.eq("taxId", "Tecnología");
-        for (Document doc : collection.find(filter)) {
-            String id = doc.getString("id");
-            List<Phone> phones = findPhones(id, doc.getList("phones", Document.class));
-            suppliers.add(new SupplierTechWithPhones(id, phones));
-        }
-
-        return suppliers;*/
     }
 
     private List<Phone> findPhones(String id, List<Document> phonesFromSupplier) {
