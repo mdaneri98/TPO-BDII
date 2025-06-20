@@ -48,6 +48,7 @@ public class Main {
 
         // Rutas específicas primero
         app.get("/products/withatleastoneorder", ProductController::getAllWithAtLeastOneOrder);
+        app.get("/products/productsNotOrdered", ProductController::getAllProductsNotOrdered);
 
         // CRUD
         app.get("/products", ProductController::getAllProducts);
