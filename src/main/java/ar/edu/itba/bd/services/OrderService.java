@@ -20,8 +20,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.collection;
-
 public class OrderService {
 
     private final MongoCollection<Document> orderCollection;
