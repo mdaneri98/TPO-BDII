@@ -7,6 +7,7 @@ import ar.edu.itba.bd.dto.OrderWithProductDTO;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.OrderDetail;
 import ar.edu.itba.bd.models.Product;
+import ar.edu.itba.bd.models.Supplier;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
@@ -25,6 +26,7 @@ public class OrderService {
     private final MongoCollection<Document> orderCollection;
     private final ProductService productService;
     private final MongoCollection<Document> productCollection;
+    private final SupplierService supplierService;
 
 
     public OrderService() {
@@ -32,6 +34,7 @@ public class OrderService {
         this.orderCollection = db.getCollection("order");
         this.productCollection = db.getCollection("product");
         this.productService = new ProductService();
+        this.supplierService = new SupplierService();
     }
 
     // ----------------------------------- NEEDS ------------------------------------
@@ -173,18 +176,34 @@ public class OrderService {
     }
 
     public void insert(Order order) {
+        // Validación de proveedor activo y autorizado
+        Supplier supplier = supplierService.findById(order.supplierId());
+        if (supplier == null || !supplier.active() || !supplier.authorized()) {
+            throw new IllegalArgumentException("El proveedor no está activo y/o autorizado");
+        }
+
+        // Cálculo de montos
+        double totalWithoutTax = 0.0;
+        for (OrderDetail detail : order.orderDetails()) {
+            Product product = productService.findById(detail.productId());
+            if (product != null) {
+                totalWithoutTax += product.price() * detail.quantity();
+            }
+        }
+
+
         Document existingOrder = orderCollection.find(new Document("id", order.id())).first();
         if (existingOrder != null) {
             throw new IllegalArgumentException("Ya existe una orden con el ID: " + order.id());
         }
-        
+
         updateProductStock(order.orderDetails(), true);
         
         Document doc = new Document()
                 .append("id", order.id())
                 .append("supplierId", order.supplierId())
                 .append("date", order.date())
-                .append("totalWithoutTax", order.totalWithoutTax())
+                .append("totalWithoutTax", totalWithoutTax)
                 .append("tax", order.tax())
                 .append("orderDetails", orderDetailsToDocuments(order.orderDetails()));
         orderCollection.insertOne(doc);
@@ -226,9 +245,9 @@ public class OrderService {
                         quantityChange = -quantityChange;
                     }
 
-                    int newCurrentStock = product.currentStock() + quantityChange;
-                    if (newCurrentStock < 0) {
-                        newCurrentStock = 0;
+                    int newFutureStock = product.futureStock() + quantityChange;
+                    if (newFutureStock < 0) {
+                        newFutureStock = 0;
                     }
                     
                     Product updatedProduct = new Product(
@@ -237,8 +256,8 @@ public class OrderService {
                         product.brand(),
                         product.category(),
                         product.price(),
-                        newCurrentStock,
-                        product.futureStock()
+                        product.currentStock(),
+                        newFutureStock
                     );
                     
                     productService.update(product.id(), updatedProduct);
