@@ -6,7 +6,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import ar.edu.itba.bd.dto.Supplier;
 import org.bson.types.ObjectId;
 
@@ -102,5 +105,22 @@ public class SupplierService {
         }
         return phoneDocs;
     }
+
+    public List<Supplier> findSuppliersWithoutOrders() {
+        MongoDatabase db = MongoConnection.getDatabase("tp2025");
+        MongoCollection<Document> orders = db.getCollection("order");
+
+        List<String> cuitWithOrders = orders.distinct("supplierId", String.class)
+                .into(new ArrayList<>());
+
+        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
+        for (Document doc : collection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
+            Supplier s = fromDocument(doc);
+            uniqueSuppliers.putIfAbsent(s.id(), s);
+        }
+
+        return new ArrayList<>(uniqueSuppliers.values());
+    }
+
 }
 

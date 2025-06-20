@@ -9,17 +9,19 @@ import io.javalin.Javalin;
 public class Main {
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create().start(7000);
+        Javalin app = Javalin.create().start(8000);
 
         // Ping endpoint
         app.get("/ping", PingController::ping);
 
         // Supplier routes
         app.get("/suppliers", SupplierController::getAllSuppliers);
+        app.get("/suppliers/without-orders", SupplierController::getSuppliersWithoutOrders);
         app.get("/suppliers/{id}", SupplierController::getSupplierById);
         app.post("/suppliers", SupplierController::createSupplier);
         app.put("/suppliers/{id}", SupplierController::updateSupplier);
         app.delete("/suppliers/{id}", SupplierController::deleteSupplier);
+
 
         // Order routes
         app.get("/orders", OrderController::getAllOrders);
