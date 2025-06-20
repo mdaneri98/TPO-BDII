@@ -1,6 +1,6 @@
 package ar.edu.itba.bd.controllers;
 
-import ar.edu.itba.bd.dto.SupplierWithPhones;
+import ar.edu.itba.bd.dto.*;
 import ar.edu.itba.bd.models.ApiResponse;
 import ar.edu.itba.bd.models.Supplier;
 import ar.edu.itba.bd.services.SupplierService;
@@ -18,8 +18,7 @@ public class SupplierController {
     public static void getAllActive(Context ctx) {
         try {
             List<Supplier> suppliers = supplierService.findAllActive();
-            //ctx.json(new ApiResponse("Proveedores obtenidos exitosamente"));
-            ctx.json(suppliers);
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
         } catch (Exception e) {
             ctx.status(500);
             ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
@@ -28,9 +27,38 @@ public class SupplierController {
 
     public static void getAllFromTech(Context ctx) {
         try {
-            List<SupplierWithPhones> suppliers = supplierService.findAllPhonesFromTech();
-            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente"));
-            ctx.json(suppliers);
+            List<SupplierTechWithPhones> suppliers = supplierService.findAllPhonesFromTech();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
+        }
+    }
+
+    public static void getSupplierAndEachPhone(Context ctx) {
+        try {
+            List<SupplierWithPhoneDTO> suppliers = supplierService.findSupplierAndEachPhone();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
+        }
+    }
+
+    public static void getAllSuppliersWithOrderSummary(Context ctx) {
+        try {
+            List<SupplierWithOrderSummaryDTO> suppliers = supplierService.findAllSuppliersWithOrderSummary();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores: " + e.getMessage()));
+        }
+    }
+
+    public static void getSuppliersWithOrders(Context ctx) {
+        try {
+            List<SuppliersWithRegisterOrderDTO> suppliers = supplierService.findSuppliersWithOrders();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
         } catch (Exception e) {
             ctx.status(500);
             ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
@@ -42,8 +70,7 @@ public class SupplierController {
     public static void getAllSuppliers(Context ctx) {
         try {
             List<Supplier> suppliers = supplierService.findAll();
-            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente"));
-            ctx.json(suppliers);
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
         } catch (Exception e) {
             ctx.status(500);
             ctx.json(new ApiResponse("Error al obtener proveedores: " + e.getMessage()));
@@ -56,8 +83,7 @@ public class SupplierController {
             Supplier supplier = supplierService.findById(id);
             
             if (supplier != null) {
-                ctx.json(new ApiResponse("Proveedor encontrado"));
-                ctx.json(supplier);
+                ctx.json(new ApiResponse("Proveedor encontrado", supplier));
             } else {
                 ctx.status(404);
                 ctx.json(new ApiResponse("Proveedor no encontrado"));

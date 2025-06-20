@@ -1,5 +1,6 @@
 package ar.edu.itba.bd.controllers;
 
+import ar.edu.itba.bd.dto.OrderDTO;
 import ar.edu.itba.bd.models.ApiResponse;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.services.OrderService;
@@ -12,11 +13,28 @@ public class OrderController {
     private static final OrderService orderService = new OrderService();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    // ----------------------------------- NEEDS ------------------------------------
+
+    public static void findOrdersBySupplierTaxId(Context ctx) {
+        try {
+            String taxId = ctx.pathParam("taxId");
+
+            List<OrderDTO> orders = orderService.findOrdersBySupplierTaxId(taxId);
+            ctx.json(new ApiResponse("Órdenes obtenidas exitosamente", orders));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener órdenes: " + e.getMessage()));
+        }
+    }
+
+
+
+    // ------------------------------------ CRUD ------------------------------------
+
     public static void getAllOrders(Context ctx) {
         try {
             List<Order> orders = orderService.findAll();
-            ctx.json(new ApiResponse("Órdenes obtenidas exitosamente"));
-            ctx.json(orders);
+            ctx.json(new ApiResponse("Órdenes obtenidas exitosamente", orders));
         } catch (Exception e) {
             ctx.status(500);
             ctx.json(new ApiResponse("Error al obtener órdenes: " + e.getMessage()));
@@ -29,8 +47,7 @@ public class OrderController {
             Order order = orderService.findById(id);
             
             if (order != null) {
-                ctx.json(new ApiResponse("Orden encontrada"));
-                ctx.json(order);
+                ctx.json(new ApiResponse("Orden encontrada", order));
             } else {
                 ctx.status(404);
                 ctx.json(new ApiResponse("Orden no encontrada"));

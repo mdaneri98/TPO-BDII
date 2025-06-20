@@ -34,7 +34,7 @@ public class OrderService {
     // ----------------------------------- NEEDS ------------------------------------
 
     //ejercicio 7
-    public List<OrderDTO> getOrdersBySupplierTaxId(String taxId) {
+    public List<OrderDTO> findOrdersBySupplierTaxId(String taxId) {
         List<Bson> pipeline = List.of(
                 Aggregates.lookup("supplier", "supplierId", "id", "suppliers"),
                 Aggregates.addFields(new Field<>("suppliers", new Document("$ifNull", List.of("$suppliers", List.of())))),
@@ -51,12 +51,19 @@ public class OrderService {
 
         List<OrderDTO> orders = new ArrayList<>();
         collection.aggregate(pipeline).forEach(doc -> {
+            // Manejar valores numéricos que pueden ser Integer o Double
+            Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
+            Number taxNum = doc.get("tax", Number.class);
+            
+            double totalWithoutTax = totalWithoutTaxNum != null ? totalWithoutTaxNum.doubleValue() : 0.0;
+            double tax = taxNum != null ? taxNum.doubleValue() : 0.0;
+            
             OrderDTO orderDTO = new OrderDTO.Builder()
                     .id(doc.getString("id"))
                     .supplierId(doc.getString("supplierId"))
                     .date(doc.getString("date"))
-                    .totalWithoutTax(doc.getDouble("totalWithoutTax"))
-                    .tax(doc.getDouble("tax"))
+                    .totalWithoutTax(totalWithoutTax)
+                    .tax(tax)
                     .build();
 
             orders.add(orderDTO);
@@ -157,21 +164,32 @@ public class OrderService {
         List<Document> orderDetailDocs = doc.getList("orderDetails", Document.class);
         if (orderDetailDocs != null) {
             for (Document orderDetailDoc : orderDetailDocs) {
+                // Manejar valores numéricos que pueden ser Integer o Double
+                Number quantityNum = orderDetailDoc.get("quantity", Number.class);
+                double quantity = quantityNum != null ? quantityNum.doubleValue() : 0.0;
+                
                 orderDetails.add(new OrderDetail(
                     orderDetailDoc.getString("orderId"),
                     orderDetailDoc.getString("productId"),
                     orderDetailDoc.getInteger("itemNumber"),
-                    orderDetailDoc.getDouble("quantity")
+                    quantity
                 ));
             }
         }
+        
+        // Manejar valores numéricos que pueden ser Integer o Double
+        Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
+        Number taxNum = doc.get("tax", Number.class);
+        
+        double totalWithoutTax = totalWithoutTaxNum != null ? totalWithoutTaxNum.doubleValue() : 0.0;
+        double tax = taxNum != null ? taxNum.doubleValue() : 0.0;
         
         return new Order(
                 doc.getString("id"),
                 doc.getString("supplierId"),
                 doc.getString("date"),
-                doc.getDouble("totalWithoutTax"),
-                doc.getDouble("tax"),
+                totalWithoutTax,
+                tax,
                 orderDetails
         );
     }

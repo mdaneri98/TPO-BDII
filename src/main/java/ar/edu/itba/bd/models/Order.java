@@ -7,7 +7,7 @@ public record Order(
     String id,
     String supplierId,
     String date,
-    double totalWithoutTax,
-    double tax,
+    Double totalWithoutTax,
+    Double tax,
     List<OrderDetail> orderDetails
 ){} 

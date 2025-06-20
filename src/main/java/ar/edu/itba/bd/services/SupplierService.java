@@ -1,10 +1,7 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
-import ar.edu.itba.bd.dto.SupplierWithOrderSummaryDTO;
-import ar.edu.itba.bd.dto.SupplierWithPhoneDTO;
-import ar.edu.itba.bd.dto.SupplierWithPhones;
-import ar.edu.itba.bd.dto.SuppliersWithRegisterOrderDTO;
+import ar.edu.itba.bd.dto.*;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.Phone;
 import com.mongodb.client.MongoCollection;
@@ -59,6 +56,9 @@ public class SupplierService {
         );
 
         collection.aggregate(pipeline).forEach(doc -> {
+            Number tax = doc.get("tax", Number.class);
+            Number totalWithoutTax = doc.get("totalWithoutTax", Number.class);
+
             SupplierWithOrderSummaryDTO dto = new SupplierWithOrderSummaryDTO.Builder()
                     .supplierName(doc.getString("supplierName"))
                     .id(doc.getString("id"))
@@ -68,8 +68,8 @@ public class SupplierService {
                     .address(doc.getString("address"))
                     .active(doc.getBoolean("active"))
                     .authorized(doc.getBoolean("authorized"))
-                    .totalWithoutTax(doc.getDouble("totalWithoutTax"))
-                    .tax(doc.getDouble("tax"))
+                    .tax(tax != null ? tax.doubleValue() : 0.0)
+                    .totalWithoutTax(totalWithoutTax != null ? totalWithoutTax.doubleValue() : 0.0)
                     .build();
 
             suppliersDTO.add(dto);
@@ -90,20 +90,27 @@ public class SupplierService {
     }
 
     //ejercicio 2
-    public List<SupplierWithPhones> findAllPhonesFromTech() {
-        List<SupplierWithPhones> suppliers = new ArrayList<>();
+    public List<SupplierTechWithPhones> findAllPhonesFromTech() {
+        List<SupplierTechWithPhones> suppliers = new ArrayList<>();
         for (Document doc : collection.find()) {
             String taxId = doc.getString("taxId");
             if (taxId != null && taxId.equals("Tecnología")) {
                 String id = doc.getString("id");
                 List<Phone> phones = findPhones(id, doc.getList("phones", Document.class));
-                suppliers.add(new SupplierWithPhones.Builder().id(id).phones(phones).build());
+                suppliers.add(new SupplierTechWithPhones(id, phones));
             }
         }
         return suppliers;
+        /*Bson filter = Filters.eq("taxId", "Tecnología");
+        for (Document doc : collection.find(filter)) {
+            String id = doc.getString("id");
+            List<Phone> phones = findPhones(id, doc.getList("phones", Document.class));
+            suppliers.add(new SupplierTechWithPhones(id, phones));
+        }
+
+        return suppliers;*/
     }
 
-    @SuppressWarnings("Unchecked")
     private List<Phone> findPhones(String id, List<Document> phonesFromSupplier) {
         List<Phone> phones = new ArrayList<>();
         if(phonesFromSupplier != null) {
@@ -143,12 +150,14 @@ public class SupplierService {
     }
 
     //ejercicio 4
-    public List<SuppliersWithRegisterOrderDTO> findSuppliersWirOrders() {
+    public List<SuppliersWithRegisterOrderDTO> findSuppliersWithOrders() {
         List<SuppliersWithRegisterOrderDTO> suppliersWithRegisterOrderDTOS = new ArrayList<>();
         List<Bson> pipeline = Arrays.asList(
-                lookup("orders", "id", "supplierId", "orders"),
-                match(Filters.exists("orders.0")),
-                project(Projections.exclude("orders"))
+                Aggregates.lookup("orders", "id", "supplierId", "orders"),
+                Aggregates.match(Filters.expr(new Document("$gt", Arrays.asList(new Document("$size", "$orders"), 0)))),
+                Aggregates.project(Projections.fields(
+                        Projections.include("id", "supplierName")
+                ))
         );
 
         collection.aggregate(pipeline).forEach(doc -> {

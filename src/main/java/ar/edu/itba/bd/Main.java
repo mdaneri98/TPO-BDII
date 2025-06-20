@@ -14,25 +14,35 @@ public class Main {
         // Ping endpoint
         app.get("/ping", PingController::ping);
 
-        // Supplier routes
+        // ----------------- Supplier routes -----------------
+        // Rutas específicas primero
+        app.get("/suppliers/phonesFromActive", SupplierController::getAllActive);
+        app.get("/suppliers/phonesFromTech", SupplierController::getAllFromTech);
+        app.get("/suppliers/phones", SupplierController::getSupplierAndEachPhone);
+        app.get("/suppliers/suppliersWithOrders", SupplierController::getSuppliersWithOrders);
+        app.get("/suppliers/suppliersWithOrdersSummary", SupplierController::getAllSuppliersWithOrderSummary);
+
+        // CRUD
         app.get("/suppliers", SupplierController::getAllSuppliers);
         app.get("/suppliers/{id}", SupplierController::getSupplierById);
         app.post("/suppliers", SupplierController::createSupplier);
         app.put("/suppliers/{id}", SupplierController::updateSupplier);
         app.delete("/suppliers/{id}", SupplierController::deleteSupplier);
 
-        // need
-        app.get("/suppliers/phonesFromActive", SupplierController::getAllActive);
-        app.get("/suppliers/phonesFromTech", SupplierController::getAllFromTech);
+        // ----------------- Order routes -----------------
 
-        // Order routes
+        // Rutas específicas primero
+        app.get("/orders/byTaxId/{taxId}", OrderController::findOrdersBySupplierTaxId);
+
+        // CRUD
         app.get("/orders", OrderController::getAllOrders);
         app.get("/orders/{id}", OrderController::getOrderById);
         app.post("/orders", OrderController::createOrder);
         app.put("/orders/{id}", OrderController::updateOrder);
         app.delete("/orders/{id}", OrderController::deleteOrder);
 
-        // Product routes
+        // ----------------- Product routes -----------------
+
         app.get("/products", ProductController::getAllProducts);
         app.get("/products/{id}", ProductController::getProductById);
         app.post("/products", ProductController::createProduct);
