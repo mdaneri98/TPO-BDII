@@ -148,7 +148,7 @@ public class OrderService {
 
             double totalWithoutTax = totalWithoutTaxNum != null ? totalWithoutTaxNum.doubleValue() : 0.0;
             double tax = taxNum != null ? taxNum.doubleValue() : 0.0;
-            double totalWithTax = totalWithoutTax + tax;
+            double totalWithTax = totalWithoutTax * (1 - tax/100);
 
             String companyName = supplierIdToCompanyName.getOrDefault(supplierId, "Desconocido");
 
