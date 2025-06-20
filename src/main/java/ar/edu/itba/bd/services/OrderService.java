@@ -25,15 +25,17 @@ import static kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.co
 public class OrderService {
 
     private final MongoCollection<Document> orderCollection;
-    private final ProductService productService;
     private final MongoCollection<Document> productCollection;
+    private final MongoCollection<Document> supplierCollection;
     private final SupplierService supplierService;
+    private final ProductService productService;
 
 
     public OrderService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
         this.orderCollection = db.getCollection("order");
         this.productCollection = db.getCollection("product");
+        this.supplierCollection = db.getCollection("supplier");
         this.productService = new ProductService();
         this.supplierService = new SupplierService();
     }
@@ -122,6 +124,7 @@ public class OrderService {
         });
         return result;
     }
+
     //ejercicio 10
     public List<OrderSummaryDTO> getOrderSummariesSortedByDate() {
         List<OrderSummaryDTO> summaries = new ArrayList<>();
