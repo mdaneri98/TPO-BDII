@@ -19,6 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 import redis.clients.jedis.Jedis;
@@ -190,18 +192,44 @@ public class SupplierService {
     }
 
     //ejercicio 12
-    public List<Supplier> findActiveButDisabledSuppliers() {
-        List<Supplier> result = new ArrayList<>();
+    public List<Supplier> findActiveAndUnauthorizedSuppliers() throws JsonProcessingException {
+        String cachedActive = redisClient.get(RedisKeys.SUPPLIERS_ACTIVE);
+        String cachedUnauthorized = redisClient.get(RedisKeys.SUPPLIERS_UNAUTHORIZED);
 
+        if (cachedActive != null && cachedUnauthorized != null) {
+            logger.info("Cache HIT[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
+            logger.info("Cache HIT[Key: {}]", RedisKeys.SUPPLIERS_UNAUTHORIZED);
+            List<Supplier> actives = objectMapper.readValue(cachedActive, new TypeReference<>() {});
+            List<Supplier> unauthorized = objectMapper.readValue(cachedUnauthorized, new TypeReference<>() {});
+            return actives.stream()
+                    .filter(unauthorized::contains)
+                    .collect(Collectors.toList());
+        }
+
+
+        logger.info("Cache MISS[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
+        logger.info("Cache MISS[Key: {}]", RedisKeys.SUPPLIERS_UNAUTHORIZED);
+
+        List<Supplier> activeSuppliers = new ArrayList<>();
+        List<Supplier> unauthorizedSuppliers = new ArrayList<>();
+        List<Supplier> intersection = new ArrayList<>();
         supplierCollection.find().forEach(doc -> {
             boolean isActive = doc.getBoolean("active");
             boolean isAuthorized = doc.getBoolean("authorized");
-            if (isActive && !isAuthorized) {
-                result.add(fromDocument(doc));
-            }
+            if (isActive)
+                activeSuppliers.add(fromDocument(doc));
+            if (isAuthorized)
+                unauthorizedSuppliers.add(fromDocument(doc));
+            if (isActive && !isAuthorized)
+                intersection.add(fromDocument(doc));
         });
 
-        return result;
+        String activeSuppliersJson = objectMapper.writeValueAsString(activeSuppliers);
+        redisClient.setex(RedisKeys.SUPPLIERS_ACTIVE, CACHE_TTL, activeSuppliersJson);
+        String unauthorizedSuppliersJson = objectMapper.writeValueAsString(unauthorizedSuppliers);
+        redisClient.setex(RedisKeys.SUPPLIERS_ACTIVE, CACHE_TTL, unauthorizedSuppliersJson);
+
+        return intersection;
     }
 
     // ------------------------------------ CRUD ------------------------------------

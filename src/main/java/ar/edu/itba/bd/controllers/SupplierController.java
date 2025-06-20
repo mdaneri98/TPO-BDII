@@ -67,9 +67,9 @@ public class SupplierController {
         }
     }
 
-    public static void getSuppliersActiveButDisabled(Context ctx) {
+    public static void getSuppliersActiveAndUnauthorizedSuppliers(Context ctx) {
         try {
-            List<Supplier> suppliers = supplierService.findActiveButDisabledSuppliers();
+            List<Supplier> suppliers = supplierService.findActiveAndUnauthorizedSuppliers();
             ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
         } catch (Exception e) {
             ctx.status(500);

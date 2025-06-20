@@ -116,18 +116,6 @@ public class OrderService {
         return result;
     }
 
-    private Product fromProductDocument(Document doc) {
-        return new Product(
-                doc.getString("id"),
-                doc.getString("description"),
-                doc.getString("brand"),
-                doc.getString("category"),
-                doc.getDouble("price"),
-                doc.getInteger("currentStock", 0),
-                doc.getInteger("futureStock", 0)
-        );
-    }
-
     // ------------------------------------ CRUD ------------------------------------
 
     public List<Order> findAll() {
@@ -262,4 +250,17 @@ public class OrderService {
         }
         return orderDetailDocs;
     }
+
+    private Product fromProductDocument(Document doc) {
+        return new Product(
+                doc.getString("id"),
+                doc.getString("description"),
+                doc.getString("brand"),
+                doc.getString("category"),
+                doc.getDouble("price"),
+                doc.getInteger("currentStock", 0),
+                doc.getInteger("futureStock", 0)
+        );
+    }
+
 } 
