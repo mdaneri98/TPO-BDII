@@ -1,9 +1,13 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
+import ar.edu.itba.bd.database.RedisConnection;
 import ar.edu.itba.bd.dto.*;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.Phone;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
@@ -17,14 +21,23 @@ import java.util.List;
 import java.util.Map;
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
+import redis.clients.jedis.Jedis;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.mongodb.client.model.Filters.eq;
 
 
 public class SupplierService {
 
+    private static final Logger logger = LoggerFactory.getLogger(SupplierService.class);
     private final MongoCollection<Document> supplierCollection;
     private final MongoCollection<Document> orderCollection;
+
+    private final Jedis redisClient = RedisConnection.getClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final int CACHE_TTL = 450;
 
     public SupplierService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
@@ -76,13 +89,24 @@ public class SupplierService {
     }
 
     //ejercicio 1
-    public List<Supplier> findAllActive() {
-        List<Supplier> suppliers = new ArrayList<>();
-        for (Document doc : supplierCollection.find()) {
-            if (doc.getBoolean("active").equals(true)) {
-                suppliers.add(fromDocument(doc));
-            }
+    public List<Supplier> findAllActive() throws JsonProcessingException {
+        String cacheKey = "suppliers:active";
+
+        String cachedResult = redisClient.get(cacheKey);
+        if (cachedResult != null) {
+            logger.info("Cache HIT para suppliers activos");
+            return objectMapper.readValue(cachedResult, new TypeReference<>() {});
         }
+
+        logger.info("Cache MISS para suppliers activos - consultando MongoDB");
+        List<Supplier> suppliers = new ArrayList<>();
+        for (Document doc : supplierCollection.find(eq("active", true))) {
+            suppliers.add(fromDocument(doc));
+        }
+
+        String suppliersJson = objectMapper.writeValueAsString(suppliers);
+        redisClient.setex(cacheKey, CACHE_TTL, suppliersJson);
+
         return suppliers;
     }
 

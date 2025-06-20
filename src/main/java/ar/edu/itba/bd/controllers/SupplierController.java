@@ -7,10 +7,12 @@ import ar.edu.itba.bd.services.SupplierService;
 import io.javalin.http.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SupplierController {
 
+    private static final Logger logger = LoggerFactory.getLogger(SupplierController.class);
     private static final SupplierService supplierService = new SupplierService();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -143,7 +145,7 @@ public class SupplierController {
         }
     }
     public static void getSuppliersWithoutOrders(Context ctx) {
-        System.out.println("getSuppliersWithoutOrders called");
+        logger.info("getSuppliersWithoutOrders called");
         try {
             List<Supplier> suppliers = supplierService.findSuppliersWithoutOrders();
             ctx.json(new ApiResponse("Proveedores sin órdenes obtenidos exitosamente"));

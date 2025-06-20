@@ -8,6 +8,8 @@ import ar.edu.itba.bd.models.Supplier;
 import ar.edu.itba.bd.services.OrderService;
 import ar.edu.itba.bd.services.ProductService;
 import ar.edu.itba.bd.services.SupplierService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -20,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CSVLoader {
-
+    private static final Logger logger = LoggerFactory.getLogger(CSVLoader.class);
+    
     private static final String DATA_PATH = "data";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d/M/yyyy");
     
@@ -35,7 +38,7 @@ public class CSVLoader {
     }
 
     public void loadAllData() {
-        System.out.println("Iniciando carga de datos CSV...");
+        logger.info("Iniciando carga de datos CSV...");
         
         try {
             loadSuppliers();
@@ -43,16 +46,15 @@ public class CSVLoader {
             loadPhones();
             loadOrders();
             
-            System.out.println("Carga de datos completada exitosamente.");
+            logger.info("Carga de datos completada exitosamente.");
             
         } catch (Exception e) {
-            System.err.println("Error durante la carga de datos: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error durante la carga de datos: " + e.getMessage(), e);
         }
     }
 
     private void loadSuppliers() {
-        System.out.println("Cargando proveedores...");
+        logger.info("Cargando proveedores...");
         String filePath = DATA_PATH + "/proveedor.csv";
         
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -68,7 +70,7 @@ public class CSVLoader {
 
                 String[] fields = line.split(";", -1);
                 if (fields.length != 7) {
-                    System.err.println("Línea de proveedor con formato incorrecto: " + line);
+                    logger.warn("Línea de proveedor con formato incorrecto: " + line);
                     continue;
                 }
 
@@ -87,19 +89,18 @@ public class CSVLoader {
                     supplierService.insert(supplier);
                     count++;
                 } catch (Exception e) {
-                    System.err.println("Error al procesar proveedor: " + line);
-                    e.printStackTrace();
+                    logger.error("Error al procesar proveedor: " + line, e);
                 }
             }
-            System.out.println("Proveedores cargados: " + count);
+            logger.info("Proveedores cargados: " + count);
             
         } catch (IOException e) {
-            System.err.println("Error al leer archivo de proveedores: " + e.getMessage());
+            logger.error("Error al leer archivo de proveedores: " + e.getMessage(), e);
         }
     }
 
     private void loadProducts() {
-        System.out.println("Cargando productos...");
+        logger.info("Cargando productos...");
         String filePath = DATA_PATH + "/producto.csv";
         
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
@@ -115,7 +116,7 @@ public class CSVLoader {
 
                 String[] fields = line.split(";", -1);
                 if (fields.length != 7) {
-                    System.err.println("Línea de producto con formato incorrecto: " + line);
+                    logger.warn("Línea de producto con formato incorrecto: " + line);
                     continue;
                 }
 
@@ -133,19 +134,18 @@ public class CSVLoader {
                     productService.insert(product);
                     count++;
                 } catch (Exception e) {
-                    System.err.println("Error al procesar producto: " + line);
-                    e.printStackTrace();
+                    logger.error("Error al procesar producto: " + line, e);
                 }
             }
-            System.out.println("Productos cargados: " + count);
+            logger.info("Productos cargados: " + count);
             
         } catch (IOException e) {
-            System.err.println("Error al leer archivo de productos: " + e.getMessage());
+            logger.error("Error al leer archivo de productos: " + e.getMessage(), e);
         }
     }
 
     private void loadPhones() {
-        System.out.println("Cargando teléfonos...");
+        logger.info("Cargando teléfonos...");
         String filePath = DATA_PATH + "/telefono.csv";
 
         Map<String, List<Phone>> phonesBySupplier = new HashMap<>();
@@ -162,7 +162,7 @@ public class CSVLoader {
 
                 String[] fields = line.split(";", -1);
                 if (fields.length != 4) {
-                    System.err.println("Línea de teléfono con formato incorrecto: " + line);
+                    logger.warn("Línea de teléfono con formato incorrecto: " + line);
                     continue;
                 }
 
@@ -177,8 +177,7 @@ public class CSVLoader {
 
                     phonesBySupplier.computeIfAbsent(supplierId, k -> new ArrayList<>()).add(phone);
                 } catch (Exception e) {
-                    System.err.println("Error al procesar teléfono: " + line);
-                    e.printStackTrace();
+                    logger.error("Error al procesar teléfono: " + line, e);
                 }
             }
 
@@ -201,19 +200,18 @@ public class CSVLoader {
                         count++;
                     }
                 } catch (Exception e) {
-                    System.err.println("Error al actualizar proveedor con teléfonos: " + entry.getKey());
-                    e.printStackTrace();
+                    logger.error("Error al actualizar proveedor con teléfonos: " + entry.getKey(), e);
                 }
             }
-            System.out.println("Proveedores actualizados con teléfonos: " + count);
+            logger.info("Proveedores actualizados con teléfonos: " + count);
             
         } catch (IOException e) {
-            System.err.println("Error al leer archivo de teléfonos: " + e.getMessage());
+            logger.error("Error al leer archivo de teléfonos: " + e.getMessage(), e);
         }
     }
 
     private void loadOrders() {
-        System.out.println("Cargando órdenes...");
+        logger.info("Cargando órdenes...");
         
         // Primero cargar los detalles de órdenes
         Map<String, List<OrderDetail>> orderDetailsMap = loadOrderDetails();
@@ -234,7 +232,7 @@ public class CSVLoader {
 
                 String[] fields = line.split(";", -1);
                 if (fields.length != 5) {
-                    System.err.println("Línea de orden con formato incorrecto: " + line);
+                    logger.warn("Línea de orden con formato incorrecto: " + line);
                     continue;
                 }
 
@@ -257,19 +255,18 @@ public class CSVLoader {
                     orderService.insert(order);
                     count++;
                 } catch (Exception e) {
-                    System.err.println("Error al procesar orden: " + line);
-                    e.printStackTrace();
+                    logger.error("Error al procesar orden: " + line, e);
                 }
             }
-            System.out.println("Órdenes cargadas: " + count);
+            logger.info("Órdenes cargadas: " + count);
             
         } catch (IOException e) {
-            System.err.println("Error al leer archivo de órdenes: " + e.getMessage());
+            logger.error("Error al leer archivo de órdenes: " + e.getMessage(), e);
         }
     }
 
     private Map<String, List<OrderDetail>> loadOrderDetails() {
-        System.out.println("Cargando detalles de órdenes...");
+        logger.info("Cargando detalles de órdenes...");
         String filePath = DATA_PATH + "/detalle_op.csv";
         Map<String, List<OrderDetail>> orderDetailsMap = new HashMap<>();
         
@@ -286,7 +283,7 @@ public class CSVLoader {
 
                 String[] fields = line.split(";", -1);
                 if (fields.length != 4) {
-                    System.err.println("Línea de detalle de orden con formato incorrecto: " + line);
+                    logger.warn("Línea de detalle de orden con formato incorrecto: " + line);
                     continue;
                 }
 
@@ -302,14 +299,13 @@ public class CSVLoader {
                     orderDetailsMap.computeIfAbsent(orderId, k -> new ArrayList<>()).add(orderDetail);
                     count++;
                 } catch (Exception e) {
-                    System.err.println("Error al procesar detalle de orden: " + line);
-                    e.printStackTrace();
+                    logger.error("Error al procesar detalle de orden: " + line, e);
                 }
             }
-            System.out.println("Detalles de órdenes cargados: " + count);
+            logger.info("Detalles de órdenes cargados: " + count);
             
         } catch (IOException e) {
-            System.err.println("Error al leer archivo de detalles de órdenes: " + e.getMessage());
+            logger.error("Error al leer archivo de detalles de órdenes: " + e.getMessage(), e);
         }
         
         return orderDetailsMap;
