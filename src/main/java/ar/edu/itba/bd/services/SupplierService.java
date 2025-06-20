@@ -25,7 +25,6 @@ import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Aggregates.*;
-import static com.mongodb.client.model.Filters.*;
 
 
 

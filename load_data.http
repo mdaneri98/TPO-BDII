@@ -1,0 +1,448 @@
+### Variables de entorno
+@baseUrl = http://localhost:7000
+
+### ========================================
+### 1. CARGAR PROVEEDORES (SUPPLIERS)
+### ========================================
+
+### Cargar proveedor 1
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "id": "1",
+  "taxId": "30660608172",
+  "companyName": "Arcos Plateados",
+  "companyType": "SA",
+  "address": "Pelliza 4234, Olivos, BA",
+  "active": false,
+  "authorized": false,
+  "phones": []
+}
+
+### Cargar proveedor 2
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "id": "2",
+  "taxId": "30660608173",
+  "companyName": "Grupo Fernández",
+  "companyType": "SRL",
+  "address": "San Martín 640 Piso 7, CABA",
+  "active": true,
+  "authorized": true,
+  "phones": []
+}
+
+### Cargar proveedor 3
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+
+{
+  "id": "3",
+  "taxId": "30660608174",
+  "companyName": "Innovation",
+  "companyType": "SAS",
+  "address": "Av del Libertador 32560, CABA",
+  "active": true,
+  "authorized": true,
+  "phones": []
+}
+
+### ========================================
+### 2. CARGAR PRODUCTOS
+### ========================================
+
+### Cargar producto 1
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "1",
+  "description": "Turrón maní",
+  "brand": "Arcor",
+  "category": "food",
+  "price": 443.88,
+  "currentStock": 404,
+  "futureStock": 0
+}
+
+### Cargar producto 2
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "2",
+  "description": "Talonario de recibos",
+  "brand": "Impresión",
+  "category": "sales",
+  "price": 192.64,
+  "currentStock": 854,
+  "futureStock": 0
+}
+
+### Cargar producto 3
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "3",
+  "description": "Anillos",
+  "brand": "Bagley",
+  "category": "food",
+  "price": 554.79,
+  "currentStock": 123,
+  "futureStock": 0
+}
+
+### Cargar producto 4
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "4",
+  "description": "Etiquetas",
+  "brand": "3M",
+  "category": "supplies",
+  "price": 48.81,
+  "currentStock": 39,
+  "futureStock": 0
+}
+
+### Cargar producto 5
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "5",
+  "description": "Regla triangular",
+  "brand": "Pizzini",
+  "category": "scales",
+  "price": 193.02,
+  "currentStock": 33,
+  "futureStock": 0
+}
+
+### ========================================
+### 3. CARGAR ÓRDENES CON DETALLES EMBEBIDO
+### ========================================
+
+### Cargar orden 1 con detalles
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "id": "1",
+  "supplierId": "4",
+  "date": "2023-05-27",
+  "totalWithoutTax": 0.0,
+  "tax": 21.0,
+  "orderDetails": [
+    {
+      "orderId": "1",
+      "productId": "9",
+      "itemNumber": 37,
+      "quantity": 93.0
+    },
+    {
+      "orderId": "1",
+      "productId": "13",
+      "itemNumber": 29,
+      "quantity": 67.0
+    },
+    {
+      "orderId": "1",
+      "productId": "19",
+      "itemNumber": 61,
+      "quantity": 77.0
+    },
+    {
+      "orderId": "1",
+      "productId": "35",
+      "itemNumber": 145,
+      "quantity": 10.0
+    },
+    {
+      "orderId": "1",
+      "productId": "41",
+      "itemNumber": 109,
+      "quantity": 44.0
+    }
+  ]
+}
+
+### Cargar orden 2 con detalles
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "id": "2",
+  "supplierId": "22",
+  "date": "2024-01-26",
+  "totalWithoutTax": 0.0,
+  "tax": 21.0,
+  "orderDetails": [
+    {
+      "orderId": "2",
+      "productId": "8",
+      "itemNumber": 4,
+      "quantity": 71.0
+    },
+    {
+      "orderId": "2",
+      "productId": "19",
+      "itemNumber": 76,
+      "quantity": 24.0
+    },
+    {
+      "orderId": "2",
+      "productId": "24",
+      "itemNumber": 97,
+      "quantity": 36.0
+    },
+    {
+      "orderId": "2",
+      "productId": "35",
+      "itemNumber": 169,
+      "quantity": 54.0
+    },
+    {
+      "orderId": "2",
+      "productId": "40",
+      "itemNumber": 146,
+      "quantity": 35.0
+    }
+  ]
+}
+
+### Cargar orden 3 con detalles
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "id": "3",
+  "supplierId": "15",
+  "date": "2023-06-04",
+  "totalWithoutTax": 0.0,
+  "tax": 21.0,
+  "orderDetails": [
+    {
+      "orderId": "3",
+      "productId": "1",
+      "itemNumber": 51,
+      "quantity": 55.0
+    },
+    {
+      "orderId": "3",
+      "productId": "2",
+      "itemNumber": 33,
+      "quantity": 52.0
+    },
+    {
+      "orderId": "3",
+      "productId": "5",
+      "itemNumber": 92,
+      "quantity": 84.0
+    },
+    {
+      "orderId": "3",
+      "productId": "11",
+      "itemNumber": 35,
+      "quantity": 30.0
+    },
+    {
+      "orderId": "3",
+      "productId": "28",
+      "itemNumber": 38,
+      "quantity": 55.0
+    }
+  ]
+}
+
+### ========================================
+### 4. CARGAR TELÉFONOS PARA PROVEEDORES
+### ========================================
+
+### Actualizar proveedor 11 con teléfonos
+PUT {{baseUrl}}/suppliers/11
+Content-Type: application/json
+
+{
+  "id": "11",
+  "taxId": "30660608222",
+  "companyName": "Alvarado",
+  "companyType": "SA",
+  "address": "Av del Libertador 2560, CABA",
+  "active": true,
+  "authorized": false,
+  "phones": [
+    {
+      "supplierId": "11",
+      "areaCode": "115",
+      "phoneNumber": "4573879",
+      "type": "F"
+    }
+  ]
+}
+
+### Actualizar proveedor 32 con teléfonos
+PUT {{baseUrl}}/suppliers/32
+Content-Type: application/json
+
+{
+  "id": "32",
+  "taxId": "30660608223",
+  "companyName": "Baker",
+  "companyType": "SAS",
+  "address": "Perón 740 Piso 7, CABA",
+  "active": true,
+  "authorized": true,
+  "phones": [
+    {
+      "supplierId": "32",
+      "areaCode": "122",
+      "phoneNumber": "4287757",
+      "type": "M"
+    },
+    {
+      "supplierId": "32",
+      "areaCode": "242",
+      "phoneNumber": "4474281",
+      "type": "M"
+    },
+    {
+      "supplierId": "32",
+      "areaCode": "598",
+      "phoneNumber": "4922572",
+      "type": "F"
+    }
+  ]
+}
+
+### ========================================
+### 5. CONSULTAS DE VERIFICACIÓN
+### ========================================
+
+### Verificar todos los proveedores
+GET {{baseUrl}}/suppliers
+
+### Verificar todos los productos
+GET {{baseUrl}}/products
+
+### Verificar todas las órdenes
+GET {{baseUrl}}/orders
+
+### Verificar proveedor específico
+GET {{baseUrl}}/suppliers/1
+
+### Verificar producto específico
+GET {{baseUrl}}/products/1
+
+### Verificar orden específica
+GET {{baseUrl}}/orders/1
+
+### ========================================
+### 6. SCRIPT PARA CARGAR DATOS MASIVOS
+### ========================================
+
+### Nota: Para cargar todos los datos del CSV, puedes usar este script
+### que procesa los archivos CSV y envía las peticiones HTTP
+
+### Ejemplo de carga masiva de productos (primeros 10)
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "6",
+  "description": "Moneda de 10",
+  "brand": "Casa moneda",
+  "category": "coin",
+  "price": 835.23,
+  "currentStock": 236,
+  "futureStock": 0
+}
+
+###
+
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "7",
+  "description": "Rollo papel film",
+  "brand": "Pepita",
+  "category": "packaging",
+  "price": 184.47,
+  "currentStock": 869,
+  "futureStock": 0
+}
+
+###
+
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "8",
+  "description": "Entraña",
+  "brand": "COTO",
+  "category": "meat",
+  "price": 724.35,
+  "currentStock": 55,
+  "futureStock": 0
+}
+
+###
+
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "9",
+  "description": "Esponja",
+  "brand": "Mortimer",
+  "category": "supplies",
+  "price": 184.12,
+  "currentStock": 312,
+  "futureStock": 0
+}
+
+###
+
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "id": "10",
+  "description": "Plástico tarjeta",
+  "brand": "VISA",
+  "category": "credit card",
+  "price": 613.74,
+  "currentStock": 111,
+  "futureStock": 0
+}
+
+### ========================================
+### 7. OPERACIONES DE PRUEBA
+### ========================================
+
+### Probar ping
+GET {{baseUrl}}/ping
+
+### Eliminar un producto de prueba
+DELETE {{baseUrl}}/products/999
+
+### Actualizar un producto
+PUT {{baseUrl}}/products/1
+Content-Type: application/json
+
+{
+  "id": "1",
+  "description": "Turrón maní actualizado",
+  "brand": "Arcor",
+  "category": "food",
+  "price": 450.00,
+  "currentStock": 400,
+  "futureStock": 0
+} 
