@@ -14,20 +14,48 @@ import java.util.List;
 
 public class ProductService {
 
-    private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> productCollection;
+    private final MongoCollection<Document> orderCollection;
 
     public ProductService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        this.collection = db.getCollection("product");
+        this.productCollection = db.getCollection("product");
+        this.orderCollection = db.getCollection("order");
     }
 
     public List<Product> findAll() {
         List<Product> products = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : productCollection.find()) {
             products.add(fromDocument(doc));
         }
         return products;
     }
+
+    //ejercicio 11
+    public List<Product> findProductsNotOrdered() {
+        Set<String> orderedProductIds = new HashSet<>();
+
+        orderCollection.find().forEach(orderDoc -> {
+            List<Document> orderDetails = orderDoc.getList("orderDetails", Document.class, Collections.emptyList());
+            for (Document detail : orderDetails) {
+                String productId = detail.getString("productId");
+                if (productId != null) {
+                    orderedProductIds.add(productId);
+                }
+            }
+        });
+
+        List<Product> result = new ArrayList<>();
+        productCollection.find().forEach(doc -> {
+            String productId = doc.getString("id");
+            if (orderedProductIds.isEmpty() || !orderedProductIds.contains(productId)) {
+                result.add(fromDocument(doc));
+            }
+        });
+
+        return result;
+    }
+
 
     // ----------------------------------- NEEDS ------------------------------------
 
@@ -41,7 +69,7 @@ public class ProductService {
         );
 
         List<Product> products = new ArrayList<>();
-        collection.aggregate(pipeline).forEach(doc -> {
+        productCollection.aggregate(pipeline).forEach(doc -> {
             products.add(fromDocument(doc));
         });
 
@@ -54,7 +82,7 @@ public class ProductService {
     // ------------------------------------ CRUD ------------------------------------
 
     public Product findById(String id) {
-        Document doc = collection.find(new Document("id", id)).first();
+        Document doc = productCollection.find(new Document("id", id)).first();
         return doc != null ? fromDocument(doc) : null;
     }
 
@@ -67,7 +95,7 @@ public class ProductService {
                 .append("price", product.price())
                 .append("currentStock", product.currentStock())
                 .append("futureStock", product.futureStock());
-        collection.insertOne(doc);
+        productCollection.insertOne(doc);
     }
 
     public boolean update(String id, Product product) {
@@ -79,11 +107,11 @@ public class ProductService {
                 .append("price", product.price())
                 .append("currentStock", product.currentStock())
                 .append("futureStock", product.futureStock()));
-        return collection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
+        return productCollection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
     }
 
     public boolean delete(String id) {
-        return collection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
+        return productCollection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
     }
 
     private Product fromDocument(Document doc) {
