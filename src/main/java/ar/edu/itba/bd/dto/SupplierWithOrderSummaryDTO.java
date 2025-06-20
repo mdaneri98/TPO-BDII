@@ -11,8 +11,8 @@ public class SupplierWithOrderSummaryDTO {
     private final String address;
     private final boolean active;
     private final boolean authorized;
-    private final double totalWithoutTax;
-    private final double tax;
+    private final Double totalWithoutTax;
+    private final Double tax;
 
     private SupplierWithOrderSummaryDTO(Builder builder) {
         this.supplierName = builder.supplierName;
@@ -36,8 +36,8 @@ public class SupplierWithOrderSummaryDTO {
         private String address;
         private boolean active;
         private boolean authorized;
-        private double totalWithoutTax;
-        private double tax;
+        private Double totalWithoutTax;
+        private Double tax;
 
         public Builder supplierName(String supplierName) {
             this.supplierName = supplierName;
@@ -79,12 +79,12 @@ public class SupplierWithOrderSummaryDTO {
             return this;
         }
 
-        public Builder totalWithoutTax(double totalWithoutTax) {
+        public Builder totalWithoutTax(Double totalWithoutTax) {
             this.totalWithoutTax = totalWithoutTax;
             return this;
         }
 
-        public Builder tax(double tax) {
+        public Builder tax(Double tax) {
             this.tax = tax;
             return this;
         }
@@ -103,7 +103,7 @@ public class SupplierWithOrderSummaryDTO {
     public String getAddress() { return address; }
     public boolean isActive() { return active; }
     public boolean isAuthorized() { return authorized; }
-    public double getTotalWithoutTax() { return totalWithoutTax; }
-    public double getTax() { return tax; }
+    public Double getTotalWithoutTax() { return totalWithoutTax; }
+    public Double getTax() { return tax; }
 }
 

@@ -15,8 +15,7 @@ public class ProductController {
     public static void getAllProducts(Context ctx) {
         try {
             List<Product> products = productService.findAll();
-            ctx.json(new ApiResponse("Productos obtenidos exitosamente"));
-            ctx.json(products);
+            ctx.json(new ApiResponse("Productos obtenidos exitosamente", products));
         } catch (Exception e) {
             ctx.status(500);
             ctx.json(new ApiResponse("Error al obtener productos: " + e.getMessage()));
@@ -29,8 +28,7 @@ public class ProductController {
             Product product = productService.findById(id);
             
             if (product != null) {
-                ctx.json(new ApiResponse("Producto encontrado"));
-                ctx.json(product);
+                ctx.json(new ApiResponse("Producto encontrado", product));
             } else {
                 ctx.status(404);
                 ctx.json(new ApiResponse("Producto no encontrado"));
