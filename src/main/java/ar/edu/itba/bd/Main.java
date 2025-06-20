@@ -1,48 +1,38 @@
 package ar.edu.itba.bd;
 
-
-import ar.edu.itba.bd.dto.Supplier;
-import ar.edu.itba.bd.services.SupplierService;
+import ar.edu.itba.bd.controllers.OrderController;
+import ar.edu.itba.bd.controllers.ProductController;
+import ar.edu.itba.bd.controllers.PingController;
+import ar.edu.itba.bd.controllers.SupplierController;
 import io.javalin.Javalin;
 
 public class Main {
 
     public static void main(String[] args) {
-        SupplierService supplierService = new SupplierService();
-
-
         Javalin app = Javalin.create().start(7000);
 
+        // Ping endpoint
+        app.get("/ping", PingController::ping);
 
-        app.get("/suppliers", ctx -> {
-            ctx.json(supplierService.findAll());
-        });
+        // Supplier routes
+        app.get("/suppliers", SupplierController::getAllSuppliers);
+        app.get("/suppliers/{id}", SupplierController::getSupplierById);
+        app.post("/suppliers", SupplierController::createSupplier);
+        app.put("/suppliers/{id}", SupplierController::updateSupplier);
+        app.delete("/suppliers/{id}", SupplierController::deleteSupplier);
 
-        app.get("/suppliers/{id}", ctx -> {
-            Supplier supplier = supplierService.findById(ctx.pathParam("id"));
-            if (supplier != null) {
-                ctx.json(supplier);
-            } else {
-                ctx.status(404).result("Supplier not found");
-            }
-        });
+        // Order routes
+        app.get("/orders", OrderController::getAllOrders);
+        app.get("/orders/{id}", OrderController::getOrderById);
+        app.post("/orders", OrderController::createOrder);
+        app.put("/orders/{id}", OrderController::updateOrder);
+        app.delete("/orders/{id}", OrderController::deleteOrder);
 
-        app.post("/suppliers", ctx -> {
-            Supplier supplier = ctx.bodyAsClass(Supplier.class);
-            supplierService.insert(supplier);
-            ctx.status(201).json(supplier);
-        });
-
-        app.put("/suppliers/{id}", ctx -> {
-            Supplier supplier = ctx.bodyAsClass(Supplier.class);
-            boolean updated = supplierService.update(ctx.pathParam("id"), supplier);
-            ctx.status(updated ? 200 : 404);
-        });
-
-        app.delete("/suppliers/{id}", ctx -> {
-            boolean deleted = supplierService.delete(ctx.pathParam("id"));
-            ctx.status(deleted ? 204 : 404);
-        });
-
+        // Product routes
+        app.get("/products", ProductController::getAllProducts);
+        app.get("/products/{id}", ProductController::getProductById);
+        app.post("/products", ProductController::createProduct);
+        app.put("/products/{id}", ProductController::updateProduct);
+        app.delete("/products/{id}", ProductController::deleteProduct);
     }
 }

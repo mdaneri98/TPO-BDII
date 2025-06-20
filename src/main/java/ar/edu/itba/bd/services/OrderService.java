@@ -3,6 +3,7 @@ package ar.edu.itba.bd.services;
 import ar.edu.itba.bd.database.MongoConnection;
 import ar.edu.itba.bd.dto.Order;
 import ar.edu.itba.bd.dto.OrderDetail;
+import ar.edu.itba.bd.dto.Product;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
@@ -14,11 +15,13 @@ import java.time.format.DateTimeFormatter;
 public class OrderService {
 
     private final MongoCollection<Document> collection;
+    private final ProductService productService;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public OrderService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
         this.collection = db.getCollection("order");
+        this.productService = new ProductService();
     }
 
     public List<Order> findAll() {
@@ -35,6 +38,8 @@ public class OrderService {
     }
 
     public void insert(Order order) {
+        updateProductStock(order.orderDetails(), true);
+        
         Document doc = new Document()
                 .append("id", order.id())
                 .append("supplierId", order.supplierId())
@@ -46,6 +51,13 @@ public class OrderService {
     }
 
     public boolean update(String id, Order order) {
+        Order oldOrder = findById(id);
+        if (oldOrder != null) {
+            updateProductStock(oldOrder.orderDetails(), false);
+        }
+
+        updateProductStock(order.orderDetails(), true);
+        
         Document update = new Document("$set", new Document()
                 .append("id", order.id())
                 .append("supplierId", order.supplierId())
@@ -57,7 +69,43 @@ public class OrderService {
     }
 
     public boolean delete(String id) {
+        Order order = findById(id);
+        if (order != null) {
+            updateProductStock(order.orderDetails(), false);
+        }
+        
         return collection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
+    }
+
+    private void updateProductStock(List<OrderDetail> orderDetails, boolean isAdding) {
+        if (orderDetails != null) {
+            for (OrderDetail detail : orderDetails) {
+                Product product = productService.findById(detail.productId());
+                if (product != null) {
+                    int quantityChange = (int) detail.quantity();
+                    if (!isAdding) {
+                        quantityChange = -quantityChange;
+                    }
+
+                    int newCurrentStock = product.currentStock() + quantityChange;
+                    if (newCurrentStock < 0) {
+                        newCurrentStock = 0; // No permitimos stock negativo
+                    }
+                    
+                    Product updatedProduct = new Product(
+                        product.id(),
+                        product.description(),
+                        product.brand(),
+                        product.category(),
+                        product.price(),
+                        newCurrentStock,
+                        product.futureStock()
+                    );
+                    
+                    productService.update(product.id(), updatedProduct);
+                }
+            }
+        }
     }
 
     private Order fromDocument(Document doc) {
