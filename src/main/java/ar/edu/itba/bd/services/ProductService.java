@@ -1,29 +1,43 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
+import ar.edu.itba.bd.database.RedisConnection;
 import ar.edu.itba.bd.models.Product;
+import ar.edu.itba.bd.utils.RedisKeys;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductService {
+    private static final Logger logger = LoggerFactory.getLogger(SupplierService.class);
 
-    private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> productCollections;
+
+    private final Jedis redisClient = RedisConnection.getClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final int CACHE_TTL = 30;
 
     public ProductService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        this.collection = db.getCollection("product");
+        this.productCollections = db.getCollection("product");
     }
 
     public List<Product> findAll() {
         List<Product> products = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : productCollections.find()) {
             products.add(fromDocument(doc));
         }
         return products;
@@ -32,7 +46,14 @@ public class ProductService {
     // ----------------------------------- NEEDS ------------------------------------
 
     //ejercicio 8
-    public List<Product> findAllWithAtLeastOneOrder() {
+    public List<Product> findAllWithAtLeastOneOrder() throws JsonProcessingException {
+        String cachedResult = redisClient.get(RedisKeys.ORDERED_PRODUCTS);
+        if (cachedResult != null) {
+            logger.info("Cache HIT[Key: {}]", RedisKeys.ORDERED_PRODUCTS);
+            return objectMapper.readValue(cachedResult, new TypeReference<>() {});
+        }
+
+        logger.info("Cache MISS[Key: {}]", RedisKeys.ORDERED_PRODUCTS);
         List<Bson> pipeline = List.of(
                 Aggregates.lookup("order", "id", "orderDetails.productId", "matchedOrders"),
                 Aggregates.match(Filters.expr(
@@ -41,9 +62,12 @@ public class ProductService {
         );
 
         List<Product> products = new ArrayList<>();
-        collection.aggregate(pipeline).forEach(doc -> {
+        productCollections.aggregate(pipeline).forEach(doc -> {
             products.add(fromDocument(doc));
         });
+
+        String productsJson = objectMapper.writeValueAsString(products);
+        redisClient.setex(RedisKeys.ORDERED_PRODUCTS, CACHE_TTL, productsJson);
 
         return products;
     }
@@ -54,7 +78,7 @@ public class ProductService {
     // ------------------------------------ CRUD ------------------------------------
 
     public Product findById(String id) {
-        Document doc = collection.find(new Document("id", id)).first();
+        Document doc = productCollections.find(new Document("id", id)).first();
         return doc != null ? fromDocument(doc) : null;
     }
 
@@ -67,7 +91,7 @@ public class ProductService {
                 .append("price", product.price())
                 .append("currentStock", product.currentStock())
                 .append("futureStock", product.futureStock());
-        collection.insertOne(doc);
+        productCollections.insertOne(doc);
     }
 
     public boolean update(String id, Product product) {
@@ -79,11 +103,11 @@ public class ProductService {
                 .append("price", product.price())
                 .append("currentStock", product.currentStock())
                 .append("futureStock", product.futureStock()));
-        return collection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
+        return productCollections.updateOne(new Document("id", id), update).getModifiedCount() > 0;
     }
 
     public boolean delete(String id) {
-        return collection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
+        return productCollections.deleteOne(new Document("id", id)).getDeletedCount() > 0;
     }
 
     private Product fromDocument(Document doc) {

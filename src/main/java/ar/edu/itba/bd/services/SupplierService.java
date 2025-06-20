@@ -29,15 +29,15 @@ import static com.mongodb.client.model.Filters.eq;
 
 
 public class SupplierService {
-
     private static final Logger logger = LoggerFactory.getLogger(SupplierService.class);
+
     private final MongoCollection<Document> supplierCollection;
     private final MongoCollection<Document> orderCollection;
 
     private final Jedis redisClient = RedisConnection.getClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final int CACHE_TTL = 450;
+    private static final int CACHE_TTL = 30;
 
     public SupplierService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
@@ -92,11 +92,11 @@ public class SupplierService {
     public List<Supplier> findAllActive() throws JsonProcessingException {
         String cachedResult = redisClient.get(RedisKeys.SUPPLIERS_ACTIVE);
         if (cachedResult != null) {
-            logger.info("Cache HIT para suppliers activos");
+            logger.info("Cache HIT[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
             return objectMapper.readValue(cachedResult, new TypeReference<>() {});
         }
 
-        logger.info("Cache MISS para suppliers activos - consultando MongoDB");
+        logger.info("Cache MISS[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
         List<Supplier> suppliers = new ArrayList<>();
         for (Document doc : supplierCollection.find(eq("active", true))) {
             suppliers.add(fromDocument(doc));
