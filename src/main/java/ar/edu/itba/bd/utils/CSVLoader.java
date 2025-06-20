@@ -1,10 +1,10 @@
 package ar.edu.itba.bd.utils;
 
-import ar.edu.itba.bd.dto.Order;
-import ar.edu.itba.bd.dto.OrderDetail;
-import ar.edu.itba.bd.dto.Phone;
-import ar.edu.itba.bd.dto.Product;
-import ar.edu.itba.bd.dto.Supplier;
+import ar.edu.itba.bd.models.Order;
+import ar.edu.itba.bd.models.OrderDetail;
+import ar.edu.itba.bd.models.Phone;
+import ar.edu.itba.bd.models.Product;
+import ar.edu.itba.bd.models.Supplier;
 import ar.edu.itba.bd.services.OrderService;
 import ar.edu.itba.bd.services.ProductService;
 import ar.edu.itba.bd.services.SupplierService;
@@ -240,7 +240,7 @@ public class CSVLoader {
 
                 try {
                     String orderId = fields[0].trim();
-                    LocalDate date = LocalDate.parse(fields[2].trim(), DATE_FORMATTER);
+                    String date = fields[2].trim();
                     
                     // Obtener los detalles de esta orden
                     List<OrderDetail> orderDetails = orderDetailsMap.getOrDefault(orderId, new ArrayList<>());

@@ -1,7 +1,7 @@
 package ar.edu.itba.bd.controllers;
 
 
-import ar.edu.itba.bd.dto.ApiResponse;
+import ar.edu.itba.bd.models.ApiResponse;
 import io.javalin.http.Context;
 
 public class PingController {

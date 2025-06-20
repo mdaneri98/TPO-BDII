@@ -1,12 +1,19 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
-import ar.edu.itba.bd.dto.Order;
-import ar.edu.itba.bd.dto.OrderDetail;
-import ar.edu.itba.bd.dto.Product;
+import ar.edu.itba.bd.dto.OrderDTO;
+import ar.edu.itba.bd.dto.SupplierWithOrderSummaryDTO;
+import ar.edu.itba.bd.models.Order;
+import ar.edu.itba.bd.models.OrderDetail;
+import ar.edu.itba.bd.models.Product;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Field;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -23,6 +30,43 @@ public class OrderService {
         this.collection = db.getCollection("order");
         this.productService = new ProductService();
     }
+
+    // ----------------------------------- NEEDS ------------------------------------
+
+    //ejercicio 7
+    public List<OrderDTO> getOrdersBySupplierTaxId(String taxId) {
+        List<Bson> pipeline = List.of(
+                Aggregates.lookup("supplier", "supplierId", "id", "suppliers"),
+                Aggregates.addFields(new Field<>("suppliers", new Document("$ifNull", List.of("$suppliers", List.of())))),
+                Aggregates.project(new Document()
+                        .append("id", "$id")
+                        .append("supplierId", "$supplierId")
+                        .append("date", "$date")
+                        .append("totalWithoutTax", "$totalWithoutTax")
+                        .append("tax", "$tax")
+                        .append("supplierTaxId", new Document("$arrayElemAt", List.of("$suppliers.taxId", 0)))
+                ),
+                Aggregates.match(Filters.eq("supplierTaxId", taxId))
+        );
+
+        List<OrderDTO> orders = new ArrayList<>();
+        collection.aggregate(pipeline).forEach(doc -> {
+            OrderDTO orderDTO = new OrderDTO.Builder()
+                    .id(doc.getString("id"))
+                    .supplierId(doc.getString("supplierId"))
+                    .date(doc.getString("date"))
+                    .totalWithoutTax(doc.getDouble("totalWithoutTax"))
+                    .tax(doc.getDouble("tax"))
+                    .build();
+
+            orders.add(orderDTO);
+        });
+
+        return orders;
+    }
+
+
+    // ------------------------------------ CRUD ------------------------------------
 
     public List<Order> findAll() {
         List<Order> orders = new ArrayList<>();
@@ -43,7 +87,7 @@ public class OrderService {
         Document doc = new Document()
                 .append("id", order.id())
                 .append("supplierId", order.supplierId())
-                .append("date", order.date().format(DATE_FORMATTER))
+                .append("date", order.date())
                 .append("totalWithoutTax", order.totalWithoutTax())
                 .append("tax", order.tax())
                 .append("orderDetails", orderDetailsToDocuments(order.orderDetails()));
@@ -61,7 +105,7 @@ public class OrderService {
         Document update = new Document("$set", new Document()
                 .append("id", order.id())
                 .append("supplierId", order.supplierId())
-                .append("date", order.date().format(DATE_FORMATTER))
+                .append("date", order.date())
                 .append("totalWithoutTax", order.totalWithoutTax())
                 .append("tax", order.tax())
                 .append("orderDetails", orderDetailsToDocuments(order.orderDetails())));
@@ -125,7 +169,7 @@ public class OrderService {
         return new Order(
                 doc.getString("id"),
                 doc.getString("supplierId"),
-                LocalDate.parse(doc.getString("date"), DATE_FORMATTER),
+                doc.getString("date"),
                 doc.getDouble("totalWithoutTax"),
                 doc.getDouble("tax"),
                 orderDetails

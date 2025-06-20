@@ -1,4 +1,4 @@
-package ar.edu.itba.bd.dto;
+package ar.edu.itba.bd.models;
 
 import java.util.List;
 
