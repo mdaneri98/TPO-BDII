@@ -10,7 +10,7 @@ import io.javalin.Javalin;
 public class Main {
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create().start(7000);
+        Javalin app = Javalin.create().start(8000);
 
         // Ping endpoint
         app.get("/ping", PingController::ping);
@@ -40,6 +40,7 @@ public class Main {
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
         app.get("/orders/coto", OrderController::getOrdersWithCotoProducts);
+        app.get("/orders/summary", OrderController::getOrderSummaries);
         app.get("/orders/{id}", OrderController::getOrderById);
         app.post("/orders", OrderController::createOrder);
         app.put("/orders/{id}", OrderController::updateOrder);

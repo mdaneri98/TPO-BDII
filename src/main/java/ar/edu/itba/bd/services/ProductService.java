@@ -137,7 +137,6 @@ public class ProductService {
     }
 
     private Product fromDocument(Document doc) {
-        // Manejar valores numéricos que pueden ser Integer o Double
         Number priceNum = doc.get("price", Number.class);
         double price = priceNum != null ? priceNum.doubleValue() : 0.0;
         

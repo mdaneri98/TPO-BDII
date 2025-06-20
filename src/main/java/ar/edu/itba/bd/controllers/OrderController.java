@@ -1,12 +1,15 @@
 package ar.edu.itba.bd.controllers;
 
 import ar.edu.itba.bd.dto.OrderDTO;
+import ar.edu.itba.bd.dto.OrderSummaryDTO;
 import ar.edu.itba.bd.dto.OrderWithProductDTO;
 import ar.edu.itba.bd.models.ApiResponse;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.services.OrderService;
 import io.javalin.http.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
+
 import java.util.List;
 
 public class OrderController {
@@ -114,6 +117,13 @@ public class OrderController {
             ctx.json(new ApiResponse("Error al eliminar orden: " + e.getMessage()));
         }
     }
-
-
+    public static void getOrderSummaries(Context ctx) {
+        try {
+            List<OrderSummaryDTO> summaries = orderService.getOrderSummariesSortedByDate();
+            ctx.json(summaries);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener el resumen de órdenes: " + e.getMessage()));
+        }
+    }
 } 

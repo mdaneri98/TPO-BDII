@@ -2,6 +2,7 @@ package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
 import ar.edu.itba.bd.dto.OrderDTO;
+import ar.edu.itba.bd.dto.OrderSummaryDTO;
 import ar.edu.itba.bd.dto.OrderWithProductDTO;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.OrderDetail;
@@ -9,12 +10,15 @@ import ar.edu.itba.bd.models.Product;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.*;
+
+import static kotlin.reflect.jvm.internal.impl.builtins.StandardNames.FqNames.collection;
 
 public class OrderService {
 
@@ -50,7 +54,6 @@ public class OrderService {
 
         List<OrderDTO> orders = new ArrayList<>();
         orderCollection.aggregate(pipeline).forEach(doc -> {
-            // Manejar valores numéricos que pueden ser Integer o Double
             Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
             Number taxNum = doc.get("tax", Number.class);
             
@@ -115,6 +118,44 @@ public class OrderService {
         });
         return result;
     }
+    //ejercicio 10
+    public List<OrderSummaryDTO> getOrderSummariesSortedByDate() {
+        List<OrderSummaryDTO> summaries = new ArrayList<>();
+
+        List<Bson> pipeline = List.of(
+                Aggregates.lookup("supplier", "supplierId", "id", "supplierInfo"),
+                Aggregates.unwind("$supplierInfo"),
+                Aggregates.project(new Document()
+                        .append("orderId", "$id")
+                        .append("date", "$date")
+                        .append("companyName", "$supplierInfo.companyName")
+                        .append("totalWithoutTax", "$totalWithoutTax")
+                        .append("totalWithTax", new Document("$add", List.of("$totalWithoutTax", "$tax")))
+                ),
+                Aggregates.group("$orderId", List.of(
+                        new BsonField("orderId", new Document("$first", "$orderId")),
+                        new BsonField("date", new Document("$first", "$date")),
+                        new BsonField("companyName", new Document("$first", "$companyName")),
+                        new BsonField("totalWithoutTax", new Document("$first", "$totalWithoutTax")),
+                        new BsonField("totalWithTax", new Document("$first", "$totalWithTax"))
+                )),
+
+                Aggregates.sort(new Document("date", 1))
+        );
+
+        orderCollection.aggregate(pipeline).forEach(doc -> {
+            summaries.add(new OrderSummaryDTO(
+                    doc.getString("orderId"),
+                    doc.getString("date"),
+                    doc.getString("companyName"),
+                    doc.getDouble("totalWithoutTax"),
+                    doc.getDouble("totalWithTax")
+            ));
+        });
+
+        return summaries;
+    }
+
 
     // ------------------------------------ CRUD ------------------------------------
 
@@ -183,7 +224,7 @@ public class OrderService {
 
                     int newCurrentStock = product.currentStock() + quantityChange;
                     if (newCurrentStock < 0) {
-                        newCurrentStock = 0; // No permitimos stock negativo
+                        newCurrentStock = 0;
                     }
                     
                     Product updatedProduct = new Product(
@@ -207,7 +248,6 @@ public class OrderService {
         List<Document> orderDetailDocs = doc.getList("orderDetails", Document.class);
         if (orderDetailDocs != null) {
             for (Document orderDetailDoc : orderDetailDocs) {
-                // Manejar valores numéricos que pueden ser Integer o Double
                 Number quantityNum = orderDetailDoc.get("quantity", Number.class);
                 double quantity = quantityNum != null ? quantityNum.doubleValue() : 0.0;
                 
@@ -220,7 +260,6 @@ public class OrderService {
             }
         }
         
-        // Manejar valores numéricos que pueden ser Integer o Double
         Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
         Number taxNum = doc.get("tax", Number.class);
         
