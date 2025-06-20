@@ -207,8 +207,8 @@ public class SupplierService {
         }
 
 
-        logger.info("Cache MISS[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
-        logger.info("Cache MISS[Key: {}]", RedisKeys.SUPPLIERS_UNAUTHORIZED);
+        logger.info("Cache HIT[Key: {}]", RedisKeys.SUPPLIERS_ACTIVE);
+        logger.info("Cache HIT[Key: {}]", RedisKeys.SUPPLIERS_UNAUTHORIZED);
 
         List<Supplier> activeSuppliers = new ArrayList<>();
         List<Supplier> unauthorizedSuppliers = new ArrayList<>();
