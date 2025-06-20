@@ -3,8 +3,8 @@ package ar.edu.itba.bd.services;
 import ar.edu.itba.bd.database.MongoConnection;
 import ar.edu.itba.bd.database.RedisConnection;
 import ar.edu.itba.bd.dto.*;
-import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.Phone;
+import ar.edu.itba.bd.utils.RedisKeys;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -90,9 +90,7 @@ public class SupplierService {
 
     //ejercicio 1
     public List<Supplier> findAllActive() throws JsonProcessingException {
-        String cacheKey = "suppliers:active";
-
-        String cachedResult = redisClient.get(cacheKey);
+        String cachedResult = redisClient.get(RedisKeys.SUPPLIERS_ACTIVE);
         if (cachedResult != null) {
             logger.info("Cache HIT para suppliers activos");
             return objectMapper.readValue(cachedResult, new TypeReference<>() {});
@@ -105,7 +103,7 @@ public class SupplierService {
         }
 
         String suppliersJson = objectMapper.writeValueAsString(suppliers);
-        redisClient.setex(cacheKey, CACHE_TTL, suppliersJson);
+        redisClient.setex(RedisKeys.SUPPLIERS_ACTIVE, CACHE_TTL, suppliersJson);
 
         return suppliers;
     }
@@ -181,6 +179,7 @@ public class SupplierService {
         return suppliersWithRegisterOrderDTOS;
     }
 
+    // ejercicio 5
     public List<Supplier> findSuppliersWithoutOrders() {
         List<String> suppliersWithOrders = orderCollection.distinct("supplierId", String.class)
                 .into(new ArrayList<>());
