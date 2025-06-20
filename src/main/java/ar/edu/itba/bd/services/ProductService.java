@@ -1,32 +1,54 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
+import ar.edu.itba.bd.database.RedisConnection;
 import ar.edu.itba.bd.models.Product;
+import ar.edu.itba.bd.utils.RedisKeys;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 
 import java.util.*;
 
 public class ProductService {
+    private static final Logger logger = LoggerFactory.getLogger(SupplierService.class);
 
-    private final MongoCollection<Document> productCollection;
     private final MongoCollection<Document> orderCollection;
+    private final MongoCollection<Document> productCollection;
+
+    private final Jedis redisClient = RedisConnection.getClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final int CACHE_TTL = 30;
 
     public ProductService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        this.productCollection = db.getCollection("product");
         this.orderCollection = db.getCollection("order");
+        this.productCollection = db.getCollection("product");
     }
 
 
     // ----------------------------------- NEEDS ------------------------------------
 
     //ejercicio 8
-    public List<Product> findAllWithAtLeastOneOrder() {
+    //ejercicio 8
+    public List<Product> findAllWithAtLeastOneOrder() throws JsonProcessingException {
+        String cachedResult = redisClient.get(RedisKeys.ORDERED_PRODUCTS);
+        if (cachedResult != null) {
+            logger.info("Cache HIT[Key: {}]", RedisKeys.ORDERED_PRODUCTS);
+            return objectMapper.readValue(cachedResult, new TypeReference<>() {});
+        }
+
+        logger.info("Cache MISS[Key: {}]", RedisKeys.ORDERED_PRODUCTS);
         List<Bson> pipeline = List.of(
                 Aggregates.lookup("order", "id", "orderDetails.productId", "matchedOrders"),
                 Aggregates.match(Filters.expr(
@@ -38,6 +60,9 @@ public class ProductService {
         productCollection.aggregate(pipeline).forEach(doc -> {
             products.add(fromDocument(doc));
         });
+
+        String productsJson = objectMapper.writeValueAsString(products);
+        redisClient.setex(RedisKeys.ORDERED_PRODUCTS, CACHE_TTL, productsJson);
 
         return products;
     }
