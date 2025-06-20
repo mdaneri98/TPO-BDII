@@ -4,6 +4,7 @@ import ar.edu.itba.bd.controllers.OrderController;
 import ar.edu.itba.bd.controllers.ProductController;
 import ar.edu.itba.bd.controllers.PingController;
 import ar.edu.itba.bd.controllers.SupplierController;
+import ar.edu.itba.bd.models.Order;
 import io.javalin.Javalin;
 
 public class Main {
@@ -37,6 +38,7 @@ public class Main {
 
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
+        app.get("/orders/coto", OrderController::getOrdersWithCotoProducts);
         app.get("/orders/{id}", OrderController::getOrderById);
         app.post("/orders", OrderController::createOrder);
         app.put("/orders/{id}", OrderController::updateOrder);

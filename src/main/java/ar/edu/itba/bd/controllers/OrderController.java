@@ -104,4 +104,15 @@ public class OrderController {
             ctx.json(new ApiResponse("Error al eliminar orden: " + e.getMessage()));
         }
     }
+    public static void getOrdersWithCotoProducts(Context ctx) {
+        try {
+            List<Order> orders = orderService.getOrdersWithCotoProducts();
+            ctx.json(new ApiResponse("Órdenes con productos de la marca COTO obtenidas exitosamente"));
+            ctx.json(orders);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener órdenes: " + e.getMessage()));
+        }
+    }
+
 } 
