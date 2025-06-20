@@ -189,6 +189,20 @@ public class SupplierService {
         return new ArrayList<>(uniqueSuppliers.values());
     }
 
+    //ejercicio 12
+    public List<Supplier> findActiveButDisabledSuppliers() {
+        List<Supplier> result = new ArrayList<>();
+
+        supplierCollection.find().forEach(doc -> {
+            boolean isActive = doc.getBoolean("active");
+            boolean isAuthorized = doc.getBoolean("authorized");
+            if (isActive && !isAuthorized) {
+                result.add(fromDocument(doc));
+            }
+        });
+
+        return result;
+    }
 
     // ------------------------------------ CRUD ------------------------------------
 
