@@ -57,13 +57,13 @@ curl -X POST http://localhost:7000/load-data
 
 ### 📦 Proveedores (Suppliers)
 
-- `GET /suppliers/phonesFromActive` - **Ejercicio 1**: Proveedores activos con caché Redis
-- `GET /suppliers/phonesFromTech` - **Ejercicio 2**: Proveedores con "Tecno" en el nombre y sus teléfonos
+- `GET /suppliers/active/phones` - **Ejercicio 1**: Proveedores activos con caché Redis
+- `GET /suppliers/tech/phones` - **Ejercicio 2**: Proveedores con "Tecno" en el nombre y sus teléfonos
 - `GET /suppliers/phones` - **Ejercicio 3**: Proveedores con cada teléfono por separado
-- `GET /suppliers/suppliersWithOrders` - **Ejercicio 4**: Proveedores que tienen órdenes registradas
+- `GET /suppliers/with-orders` - **Ejercicio 4**: Proveedores que tienen órdenes registradas
 - `GET /suppliers/without-orders` - **Ejercicio 5**: Proveedores sin órdenes
-- `GET /suppliers/suppliersWithOrdersSummary` - **Ejercicio 6**: Proveedores con resumen de órdenes (totales con/sin impuestos)
-- `GET /suppliers/activeAndUnauthorized` - **Ejercicio 12**: Proveedores activos pero no autorizados
+- `GET /suppliers/with-orders-summary` - **Ejercicio 6**: Proveedores con resumen de órdenes (totales con/sin impuestos)
+- `GET /suppliers/active-unauthorized` - **Ejercicio 12**: Proveedores activos pero no autorizados
 
 #### CRUD Básico
 - `GET /suppliers` - Obtener todos los proveedores
@@ -74,8 +74,8 @@ curl -X POST http://localhost:7000/load-data
 
 ### 📋 Órdenes (Orders)
 
-- `GET /orders/byTaxId` - **Ejercicio 7**: Órdenes por taxId del proveedor
-- `GET /orders/coto-products` - **Ejercicio 8**: Órdenes que contienen productos de marca COTO
+- `GET /orders/by-supplier-tax-id` - **Ejercicio 7**: Órdenes por taxId del proveedor
+- `GET /orders/with-coto-products` - **Ejercicio 8**: Órdenes que contienen productos de marca COTO
 
 #### CRUD Básico
 - `GET /orders` - Obtener todas las órdenes
@@ -87,8 +87,8 @@ curl -X POST http://localhost:7000/load-data
 ### 🛍️ Productos (Products)
 
 #### Endpoints Específicos
-- `GET /products/withatleastoneorder` - **Ejercicio 9**: Productos con al menos una orden
-- `GET /products/productsNotOrdered` - **Ejercicio 10**: Productos que nunca fueron ordenados
+- `GET /products/with-orders` - **Ejercicio 9**: Productos con al menos una orden
+- `GET /products/without-orders` - **Ejercicio 10**: Productos que nunca fueron ordenados
 
 #### CRUD Básico
 - `GET /products` - Obtener todos los productos
@@ -132,12 +132,12 @@ curl -X POST http://localhost:7000/suppliers \
 
 ### Obtener proveedores activos (con caché)
 ```bash
-curl http://localhost:7000/suppliers/phonesFromActive
+curl http://localhost:7000/suppliers/active/phones
 ```
 
 ### Obtener productos con al menos una orden
 ```bash
-curl http://localhost:7000/products/withatleastoneorder
+curl http://localhost:7000/products/with-orders
 ```
 
 ## 🔧 Configuración
