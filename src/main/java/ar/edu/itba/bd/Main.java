@@ -23,6 +23,7 @@ public class Main {
         app.get("/suppliers/suppliersWithOrders", SupplierController::getSuppliersWithOrders);
         app.get("/suppliers/suppliersWithOrdersSummary", SupplierController::getAllSuppliersWithOrderSummary);
         app.get("/suppliers/without-orders", SupplierController::getSuppliersWithoutOrders);
+        app.get("/suppliers/suppliersActiveButDisabled", SupplierController::getSuppliersActiveButDisabled);
 
         // CRUD
         app.get("/suppliers", SupplierController::getAllSuppliers);
