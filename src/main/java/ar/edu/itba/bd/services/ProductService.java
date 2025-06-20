@@ -109,6 +109,11 @@ public class ProductService {
     }
 
     public void insert(Product product) {
+        Document existingProduct = productCollection.find(new Document("id", product.id())).first();
+        if (existingProduct != null) {
+            throw new IllegalArgumentException("Ya existe un producto con el ID: " + product.id());
+        }
+        
         Document doc = new Document()
                 .append("id", product.id())
                 .append("description", product.description())
@@ -122,7 +127,6 @@ public class ProductService {
 
     public boolean update(String id, Product product) {
         Document update = new Document("$set", new Document()
-                .append("id", product.id())
                 .append("description", product.description())
                 .append("brand", product.brand())
                 .append("category", product.category())

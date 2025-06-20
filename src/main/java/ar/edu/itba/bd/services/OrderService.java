@@ -132,6 +132,11 @@ public class OrderService {
     }
 
     public void insert(Order order) {
+        Document existingOrder = orderCollection.find(new Document("id", order.id())).first();
+        if (existingOrder != null) {
+            throw new IllegalArgumentException("Ya existe una orden con el ID: " + order.id());
+        }
+        
         updateProductStock(order.orderDetails(), true);
         
         Document doc = new Document()
@@ -153,7 +158,6 @@ public class OrderService {
         updateProductStock(order.orderDetails(), true);
         
         Document update = new Document("$set", new Document()
-                .append("id", order.id())
                 .append("supplierId", order.supplierId())
                 .append("date", order.date())
                 .append("totalWithoutTax", order.totalWithoutTax())
