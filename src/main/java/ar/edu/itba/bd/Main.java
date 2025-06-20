@@ -4,8 +4,8 @@ import ar.edu.itba.bd.controllers.OrderController;
 import ar.edu.itba.bd.controllers.ProductController;
 import ar.edu.itba.bd.controllers.PingController;
 import ar.edu.itba.bd.controllers.SupplierController;
-import ar.edu.itba.bd.models.Order;
 import io.javalin.Javalin;
+import ar.edu.itba.bd.utils.CSVLoader;
 
 public class Main {
 
@@ -14,6 +14,10 @@ public class Main {
 
         // Ping endpoint
         app.get("/ping", PingController::ping);
+        app.get("/load-data", (ctx) -> {
+            new CSVLoader().loadAllData();
+            ctx.status(200);
+        });
 
         // ----------------- Supplier routes -----------------
         // Rutas específicas primero
