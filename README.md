@@ -38,8 +38,7 @@ curl http://localhost:7000/ping
 La aplicación incluye un endpoint que carga automáticamente todos los datos desde los archivos CSV ubicados en la carpeta `data/`.
 
 ```bash
-# Cargar todos los datos desde CSV
-curl -X POST http://localhost:7000/load-data
+curl http://localhost:7000/load-data
 ```
 
 ### Archivos CSV disponibles
@@ -75,7 +74,8 @@ curl -X POST http://localhost:7000/load-data
 ### 📋 Órdenes (Orders)
 
 - `GET /orders/by-supplier-tax-id` - **Ejercicio 7**: Órdenes por taxId del proveedor
-- `GET /orders/with-coto-products` - **Ejercicio 8**: Órdenes que contienen productos de marca COTO
+- `GET /orders/with-coto-products` - **Ejercicio 9**: Órdenes que contienen productos de marca COTO
+- `GET /orders/summary` - **Ejercicio 10**: Resumen de órdenes ordenado por fecha (totales con/sin IVA)
 
 #### CRUD Básico
 - `GET /orders` - Obtener todas las órdenes
@@ -87,8 +87,8 @@ curl -X POST http://localhost:7000/load-data
 ### 🛍️ Productos (Products)
 
 #### Endpoints Específicos
-- `GET /products/with-orders` - **Ejercicio 9**: Productos con al menos una orden
-- `GET /products/without-orders` - **Ejercicio 10**: Productos que nunca fueron ordenados
+- `GET /products/with-orders` - **Ejercicio 8**: Productos con al menos una orden
+- `GET /products/without-orders` - **Ejercicio 11**: Productos que nunca fueron ordenados
 
 #### CRUD Básico
 - `GET /products` - Obtener todos los productos
