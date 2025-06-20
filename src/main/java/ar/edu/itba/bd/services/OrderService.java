@@ -2,7 +2,7 @@ package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
 import ar.edu.itba.bd.dto.OrderDTO;
-import ar.edu.itba.bd.dto.SupplierWithOrderSummaryDTO;
+import ar.edu.itba.bd.dto.OrderWithProductDTO;
 import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.OrderDetail;
 import ar.edu.itba.bd.models.Product;
@@ -14,20 +14,19 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class OrderService {
 
-    private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> orderCollection;
     private final ProductService productService;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final MongoCollection<Document> productCollection;
+
 
     public OrderService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        this.collection = db.getCollection("order");
+        this.orderCollection = db.getCollection("order");
+        this.productCollection = db.getCollection("product");
         this.productService = new ProductService();
     }
 
@@ -50,7 +49,7 @@ public class OrderService {
         );
 
         List<OrderDTO> orders = new ArrayList<>();
-        collection.aggregate(pipeline).forEach(doc -> {
+        orderCollection.aggregate(pipeline).forEach(doc -> {
             // Manejar valores numéricos que pueden ser Integer o Double
             Number totalWithoutTaxNum = doc.get("totalWithoutTax", Number.class);
             Number taxNum = doc.get("tax", Number.class);
@@ -73,33 +72,74 @@ public class OrderService {
     }
 
     //ejercicio 9
-    public List<Order> getOrdersWithCotoProducts() {
-        List<Bson> pipeline = List.of(
-                Aggregates.lookup("product", "orderDetails.productId", "id", "products"),
-                Aggregates.match(Filters.elemMatch("products", Filters.eq("brand", "COTO")))
-        );
+    public List<OrderWithProductDTO> findOrdersWithCotoProducts() {
+        Set<String> cotoProductIds = new HashSet<>();
+        productCollection.find(Filters.eq("brand", "COTO"))
+                .forEach(doc -> {
+                    String id = doc.getString("id");
+                    if (id != null) {
+                        cotoProductIds.add(id);
+                    }
+                });
 
-        List<Order> result = new ArrayList<>();
-        collection.aggregate(pipeline).forEach(doc -> {
-            result.add(fromDocument(doc));
+        List<OrderWithProductDTO> result = new ArrayList<>();
+        orderCollection.find().forEach(orderDoc -> {
+            List<Document> orderDetails = orderDoc.getList("orderDetails", Document.class, Collections.emptyList());
+
+            boolean hasCotoProduct = orderDetails.stream()
+                    .map(d -> d.getString("productId"))
+                    .anyMatch(cotoProductIds::contains);
+
+            if (hasCotoProduct) {
+                List<Product> products = new ArrayList<>();
+                for (Document detail : orderDetails) {
+                    String pid = detail.getString("productId");
+                    if (pid != null && cotoProductIds.contains(pid)) {
+                        Document productDoc = productCollection.find(Filters.eq("id", pid)).first();
+                        if (productDoc != null) {
+                            products.add(fromProductDocument(productDoc));
+                        }
+                    }
+                }
+
+                OrderWithProductDTO dto = new OrderWithProductDTO(
+                        orderDoc.getString("id"),
+                        orderDoc.getString("supplierId"),
+                        orderDoc.getString("date"),
+                        orderDoc.getDouble("totalWithoutTax"),
+                        orderDoc.getDouble("tax"),
+                        products
+                );
+                result.add(dto);
+            }
         });
-
         return result;
     }
 
+    private Product fromProductDocument(Document doc) {
+        return new Product(
+                doc.getString("id"),
+                doc.getString("description"),
+                doc.getString("brand"),
+                doc.getString("category"),
+                doc.getDouble("price"),
+                doc.getInteger("currentStock", 0),
+                doc.getInteger("futureStock", 0)
+        );
+    }
 
     // ------------------------------------ CRUD ------------------------------------
 
     public List<Order> findAll() {
         List<Order> orders = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : orderCollection.find()) {
             orders.add(fromDocument(doc));
         }
         return orders;
     }
 
     public Order findById(String id) {
-        Document doc = collection.find(new Document("id", id)).first();
+        Document doc = orderCollection.find(new Document("id", id)).first();
         return doc != null ? fromDocument(doc) : null;
     }
 
@@ -113,7 +153,7 @@ public class OrderService {
                 .append("totalWithoutTax", order.totalWithoutTax())
                 .append("tax", order.tax())
                 .append("orderDetails", orderDetailsToDocuments(order.orderDetails()));
-        collection.insertOne(doc);
+        orderCollection.insertOne(doc);
     }
 
     public boolean update(String id, Order order) {
@@ -131,7 +171,7 @@ public class OrderService {
                 .append("totalWithoutTax", order.totalWithoutTax())
                 .append("tax", order.tax())
                 .append("orderDetails", orderDetailsToDocuments(order.orderDetails())));
-        return collection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
+        return orderCollection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
     }
 
     public boolean delete(String id) {
@@ -140,7 +180,7 @@ public class OrderService {
             updateProductStock(order.orderDetails(), false);
         }
         
-        return collection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
+        return orderCollection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
     }
 
     private void updateProductStock(List<OrderDetail> orderDetails, boolean isAdding) {

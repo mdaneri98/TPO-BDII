@@ -161,22 +161,17 @@ public class SupplierService {
     }
 
     //ejercicio 4
-    public List<SuppliersWithRegisterOrderDTO> findSuppliersWithOrders() {
-        List<SuppliersWithRegisterOrderDTO> suppliersWithRegisterOrderDTOS = new ArrayList<>();
-        List<Bson> pipeline = Arrays.asList(
-                Aggregates.lookup("orders", "id", "supplierId", "orders"),
-                Aggregates.match(Filters.expr(new Document("$gt", Arrays.asList(new Document("$size", "$orders"), 0)))),
-                Aggregates.project(Projections.fields(
-                        Projections.include("id", "supplierName")
-                ))
-        );
+    public List<Supplier> findSuppliersWithOrders() {
+        List<String> supplierIdsWithOrders = orderCollection
+                .distinct("supplierId", String.class)
+                .into(new ArrayList<>());
 
-        supplierCollection.aggregate(pipeline).forEach(doc -> {
-            SuppliersWithRegisterOrderDTO supplier = new SuppliersWithRegisterOrderDTO(doc.getString("id"), doc.getString("supplierName"));
-            suppliersWithRegisterOrderDTOS.add(supplier);
-        });
+        List<Supplier> result = new ArrayList<>();
+        supplierCollection
+                .find(Filters.in("id", supplierIdsWithOrders))
+                .forEach(doc -> result.add(fromDocument(doc)));
 
-        return suppliersWithRegisterOrderDTOS;
+        return result;
     }
 
     // ejercicio 5

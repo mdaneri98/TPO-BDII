@@ -57,10 +57,9 @@ public class SupplierController {
             ctx.json(new ApiResponse("Error al obtener proveedores: " + e.getMessage()));
         }
     }
-
     public static void getSuppliersWithOrders(Context ctx) {
         try {
-            List<SuppliersWithRegisterOrderDTO> suppliers = supplierService.findSuppliersWithOrders();
+            List<Supplier> suppliers = supplierService.findSuppliersWithOrders();
             ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
         } catch (Exception e) {
             ctx.status(500);
