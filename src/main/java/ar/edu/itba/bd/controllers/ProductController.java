@@ -23,6 +23,17 @@ public class ProductController {
             ctx.json(new ApiResponse("Error al obtener productos: " + e.getMessage()));
         }
     }
+    
+    public static void getAllProductsNotOrdered(Context ctx) {
+        try {
+            List<Product> products = productService.findProductsNotOrdered();
+            ctx.json(new ApiResponse("Productos obtenidos exitosamente", products));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener productos: " + e.getMessage()));
+        }
+    }
+
 
     // ------------------------------------ CRUD ------------------------------------
 
