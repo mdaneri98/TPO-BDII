@@ -7,7 +7,6 @@ import ar.edu.itba.bd.models.Phone;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Field;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
@@ -19,17 +18,18 @@ import java.util.Map;
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 
-import static com.mongodb.client.model.Aggregates.*;
-
+import static com.mongodb.client.model.Filters.eq;
 
 
 public class SupplierService {
 
-    private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> supplierCollection;
+    private final MongoCollection<Document> orderCollection;
 
     public SupplierService() {
         MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        this.collection = db.getCollection("supplier");
+        this.supplierCollection = db.getCollection("supplier");
+        this.orderCollection = db.getCollection("order");
     }
 
 
@@ -39,42 +39,38 @@ public class SupplierService {
     public List<SupplierWithOrderSummaryDTO> findAllSuppliersWithOrderSummary() {
         List<SupplierWithOrderSummaryDTO> suppliersDTO = new ArrayList<>();
 
-        List<Bson> pipeline = List.of(
-                lookup("order", "id", "supplierId", "orders"),
-                Aggregates.addFields(new Field<>("orders", new Document("$ifNull", List.of("$orders", List.of())))),
-                Aggregates.project(
-                        new Document("supplierName", "$companyName")
-                                .append("id", "$id")
-                                .append("taxId", "$taxId")
-                                .append("companyName", "$companyName")
-                                .append("companyType", "$companyType")
-                                .append("address", "$address")
-                                .append("active", "$active")
-                                .append("authorized", "$authorized")
-                                .append("totalWithoutTax", new Document("$sum", "$orders.totalWithoutTax"))
-                                .append("tax", new Document("$sum", "$orders.tax"))
-                )
-        );
+        for (Document supplierDoc : supplierCollection.find()) {
+            String supplierId = supplierDoc.getString("id");
 
-        collection.aggregate(pipeline).forEach(doc -> {
-            Number tax = doc.get("tax", Number.class);
-            Number totalWithoutTax = doc.get("totalWithoutTax", Number.class);
+            double totalWithoutTax = 0.0;
+            double totalWithTax = 0.0;
+
+            for (Document orderDoc : orderCollection.find(eq("supplierId", supplierId))) {
+                Double orderTotal = orderDoc.getDouble("totalWithoutTax");
+                Double orderTax = orderDoc.getDouble("tax");
+
+                double total = orderTotal != null ? orderTotal : 0.0;
+                double tax = orderTax != null ? orderTax : 0.0;
+
+                totalWithoutTax += total;
+                totalWithTax += total * (1 - (tax/100));
+            }
 
             SupplierWithOrderSummaryDTO dto = new SupplierWithOrderSummaryDTO.Builder()
-                    .supplierName(doc.getString("supplierName"))
-                    .id(doc.getString("id"))
-                    .taxId(doc.getString("taxId"))
-                    .companyName(doc.getString("companyName"))
-                    .companyType(doc.getString("companyType"))
-                    .address(doc.getString("address"))
-                    .active(doc.getBoolean("active"))
-                    .authorized(doc.getBoolean("authorized"))
-                    .tax(tax != null ? tax.doubleValue() : 0.0)
-                    .totalWithoutTax(totalWithoutTax != null ? totalWithoutTax.doubleValue() : 0.0)
+                    .supplierName(supplierDoc.getString("companyName"))
+                    .id(supplierDoc.getString("id"))
+                    .taxId(supplierDoc.getString("taxId"))
+                    .companyName(supplierDoc.getString("companyName"))
+                    .companyType(supplierDoc.getString("companyType"))
+                    .address(supplierDoc.getString("address"))
+                    .active(supplierDoc.getBoolean("active"))
+                    .authorized(supplierDoc.getBoolean("authorized"))
+                    .totalWithoutTax(totalWithoutTax)
+                    .totalWithTax(totalWithTax)
                     .build();
 
             suppliersDTO.add(dto);
-        });
+        }
 
         return suppliersDTO;
     }
@@ -82,7 +78,7 @@ public class SupplierService {
     //ejercicio 1
     public List<Supplier> findAllActive() {
         List<Supplier> suppliers = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : supplierCollection.find()) {
             if (doc.getBoolean("active").equals(true)) {
                 suppliers.add(fromDocument(doc));
             }
@@ -93,7 +89,7 @@ public class SupplierService {
     //ejercicio 2
     public List<SupplierTechWithPhones> findAllPhonesFromTech() {
         List<SupplierTechWithPhones> suppliers = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : supplierCollection.find()) {
             String taxId = doc.getString("taxId");
             if (taxId != null && taxId.equals("Tecnología")) {
                 String id = doc.getString("id");
@@ -130,7 +126,7 @@ public class SupplierService {
     public List<SupplierWithPhoneDTO> findSupplierAndEachPhone() {
         List<SupplierWithPhoneDTO> supplierWithPhoneDTOS = new ArrayList<>();
 
-        for (Document doc : collection.find()) {
+        for (Document doc : supplierCollection.find()) {
             String id = doc.getString("id");
             String taxId = doc.getString("taxId");
             String companyName = doc.getString("companyName");
@@ -161,7 +157,7 @@ public class SupplierService {
                 ))
         );
 
-        collection.aggregate(pipeline).forEach(doc -> {
+        supplierCollection.aggregate(pipeline).forEach(doc -> {
             SuppliersWithRegisterOrderDTO supplier = new SuppliersWithRegisterOrderDTO(doc.getString("id"), doc.getString("supplierName"));
             suppliersWithRegisterOrderDTOS.add(supplier);
         });
@@ -174,14 +170,14 @@ public class SupplierService {
 
     public List<Supplier> findAll() {
         List<Supplier> suppliers = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : supplierCollection.find()) {
             suppliers.add(fromDocument(doc));
         }
         return suppliers;
     }
 
     public Supplier findById(String id) {
-        Document doc = collection.find(new Document("id", id)).first();
+        Document doc = supplierCollection.find(new Document("id", id)).first();
         return doc != null ? fromDocument(doc) : null;
     }
 
@@ -195,7 +191,7 @@ public class SupplierService {
                 .append("active", s.active())
                 .append("authorized", s.authorized())
                 .append("phones", phonesToDocuments(s.phones()));
-        collection.insertOne(doc);
+        supplierCollection.insertOne(doc);
     }
 
     public boolean update(String id, Supplier s) {
@@ -208,11 +204,11 @@ public class SupplierService {
                 .append("active", s.active())
                 .append("authorized", s.authorized())
                 .append("phones", phonesToDocuments(s.phones())));
-        return collection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
+        return supplierCollection.updateOne(new Document("id", id), update).getModifiedCount() > 0;
     }
 
     public boolean delete(String id) {
-        return collection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
+        return supplierCollection.deleteOne(new Document("id", id)).getDeletedCount() > 0;
     }
 
     private Supplier fromDocument(Document doc) {
@@ -263,7 +259,7 @@ public class SupplierService {
                 .into(new ArrayList<>());
 
         Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
-        for (Document doc : collection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
+        for (Document doc : supplierCollection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
             Supplier s = fromDocument(doc);
             uniqueSuppliers.putIfAbsent(s.id(), s);
         }
