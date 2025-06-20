@@ -89,7 +89,7 @@ public class SupplierService {
     //ejercicio 2
     public List<SupplierTechWithPhones> findAllPhonesFromTech() {
         List<SupplierTechWithPhones> suppliers = new ArrayList<>();
-        for (Document doc : collection.find()) {
+        for (Document doc : supplierCollection.find()) {
             String companyName = doc.getString("companyName");
             if (companyName != null && companyName.contains("Tecno")) {
                 String id = doc.getString("id");

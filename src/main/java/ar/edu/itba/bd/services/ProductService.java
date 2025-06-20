@@ -9,8 +9,7 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ProductService {
 
@@ -23,11 +22,23 @@ public class ProductService {
         this.orderCollection = db.getCollection("order");
     }
 
-    public List<Product> findAll() {
+
+    // ----------------------------------- NEEDS ------------------------------------
+
+    //ejercicio 8
+    public List<Product> findAllWithAtLeastOneOrder() {
+        List<Bson> pipeline = List.of(
+                Aggregates.lookup("order", "id", "orderDetails.productId", "matchedOrders"),
+                Aggregates.match(Filters.expr(
+                        new Document("$gt", List.of(new Document("$size", "$matchedOrders"), 0))
+                ))
+        );
+
         List<Product> products = new ArrayList<>();
-        for (Document doc : productCollection.find()) {
+        productCollection.aggregate(pipeline).forEach(doc -> {
             products.add(fromDocument(doc));
-        }
+        });
+
         return products;
     }
 
@@ -57,29 +68,15 @@ public class ProductService {
     }
 
 
-    // ----------------------------------- NEEDS ------------------------------------
+    // ------------------------------------ CRUD ------------------------------------
 
-    //ejercicio 8
-    public List<Product> findAllWithAtLeastOneOrder() {
-        List<Bson> pipeline = List.of(
-                Aggregates.lookup("order", "id", "orderDetails.productId", "matchedOrders"),
-                Aggregates.match(Filters.expr(
-                        new Document("$gt", List.of(new Document("$size", "$matchedOrders"), 0))
-                ))
-        );
-
+    public List<Product> findAll() {
         List<Product> products = new ArrayList<>();
-        productCollection.aggregate(pipeline).forEach(doc -> {
+        for (Document doc : productCollection.find()) {
             products.add(fromDocument(doc));
-        });
-
+        }
         return products;
     }
-
-
-
-
-    // ------------------------------------ CRUD ------------------------------------
 
     public Product findById(String id) {
         Document doc = productCollection.find(new Document("id", id)).first();

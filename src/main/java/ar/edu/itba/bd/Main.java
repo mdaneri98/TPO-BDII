@@ -34,8 +34,8 @@ public class Main {
         // ----------------- Order routes -----------------
 
         // Rutas específicas primero
-        app.get("/orders/byTaxId", OrderController::findOrdersBySupplierTaxId);
-
+        app.get("/orders/byTaxId", OrderController::getOrdersBySupplierTaxId);
+        app.get("/orders/coto-products", OrderController::getOrdersWithCotoProducts);
         // CRUD
         app.get("/orders", OrderController::getAllOrders);
         app.get("/orders/coto", OrderController::getOrdersWithCotoProducts);

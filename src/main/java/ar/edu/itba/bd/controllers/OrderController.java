@@ -15,7 +15,7 @@ public class OrderController {
 
     // ----------------------------------- NEEDS ------------------------------------
 
-    public static void findOrdersBySupplierTaxId(Context ctx) {
+    public static void getOrdersBySupplierTaxId(Context ctx) {
         try {
             String taxId = "30660608175";
             List<OrderDTO> orders = orderService.findOrdersBySupplierTaxId(taxId);
@@ -106,7 +106,7 @@ public class OrderController {
     }
     public static void getOrdersWithCotoProducts(Context ctx) {
         try {
-            List<Order> orders = orderService.getOrdersWithCotoProducts();
+            List<Order> orders = orderService.findOrdersWithCotoProducts();
             ctx.json(new ApiResponse("Órdenes con productos de la marca COTO obtenidas exitosamente"));
             ctx.json(orders);
         } catch (Exception e) {
