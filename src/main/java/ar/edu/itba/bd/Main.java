@@ -10,7 +10,7 @@ import ar.edu.itba.bd.utils.CSVLoader;
 public class Main {
 
     public static void main(String[] args) {
-        Javalin app = Javalin.create().start(8000);
+        Javalin app = Javalin.create().start(7000);
 
         // Ping endpoint
         app.get("/ping", PingController::ping);
