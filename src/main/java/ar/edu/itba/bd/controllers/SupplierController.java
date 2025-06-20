@@ -7,6 +7,7 @@ import ar.edu.itba.bd.services.SupplierService;
 import io.javalin.http.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class SupplierController {
 
@@ -141,4 +142,17 @@ public class SupplierController {
             ctx.json(new ApiResponse("Error al eliminar proveedor: " + e.getMessage()));
         }
     }
+    public static void getSuppliersWithoutOrders(Context ctx) {
+        System.out.println("getSuppliersWithoutOrders called");
+        try {
+            List<Supplier> suppliers = supplierService.findSuppliersWithoutOrders();
+            ctx.json(new ApiResponse("Proveedores sin órdenes obtenidos exitosamente"));
+            ctx.json(suppliers);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores sin órdenes: " + e.getMessage()));
+        }
+    }
+
+
 } 

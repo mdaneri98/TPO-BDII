@@ -12,8 +12,13 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
 import org.bson.Document;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+
+import ar.edu.itba.bd.dto.Supplier;
+import org.bson.types.ObjectId;
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 
@@ -253,5 +258,22 @@ public class SupplierService {
         }
         return phoneDocs;
     }
+
+    public List<Supplier> findSuppliersWithoutOrders() {
+        MongoDatabase db = MongoConnection.getDatabase("tp2025");
+        MongoCollection<Document> orders = db.getCollection("order");
+
+        List<String> cuitWithOrders = orders.distinct("supplierId", String.class)
+                .into(new ArrayList<>());
+
+        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
+        for (Document doc : collection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
+            Supplier s = fromDocument(doc);
+            uniqueSuppliers.putIfAbsent(s.id(), s);
+        }
+
+        return new ArrayList<>(uniqueSuppliers.values());
+    }
+
 }
 
