@@ -67,6 +67,16 @@ public class SupplierController {
         }
     }
 
+    public static void getSuppliersActiveButDisabled(Context ctx) {
+        try {
+            List<Supplier> suppliers = supplierService.findActiveButDisabledSuppliers();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente", suppliers));
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
+        }
+    }
+
     // ------------------------------------ CRUD ------------------------------------
 
     public static void getAllSuppliers(Context ctx) {
