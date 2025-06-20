@@ -16,14 +16,10 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import ar.edu.itba.bd.dto.Supplier;
-import org.bson.types.ObjectId;
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Aggregates.*;
-import static com.mongodb.client.model.Filters.*;
 
 
 
