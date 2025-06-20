@@ -65,6 +65,21 @@ public class OrderService {
         return orders;
     }
 
+    //ejercicio 9
+    public List<Order> getOrdersWithCotoProducts() {
+        List<Bson> pipeline = List.of(
+                Aggregates.lookup("product", "orderDetails.productId", "id", "products"),
+                Aggregates.match(Filters.elemMatch("products", Filters.eq("brand", "COTO")))
+        );
+
+        List<Order> result = new ArrayList<>();
+        collection.aggregate(pipeline).forEach(doc -> {
+            result.add(fromDocument(doc));
+        });
+
+        return result;
+    }
+
 
     // ------------------------------------ CRUD ------------------------------------
 

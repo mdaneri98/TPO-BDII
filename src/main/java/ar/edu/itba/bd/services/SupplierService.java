@@ -5,7 +5,6 @@ import ar.edu.itba.bd.dto.SupplierWithOrderSummaryDTO;
 import ar.edu.itba.bd.dto.SupplierWithPhoneDTO;
 import ar.edu.itba.bd.dto.SupplierWithPhones;
 import ar.edu.itba.bd.dto.SuppliersWithRegisterOrderDTO;
-import ar.edu.itba.bd.models.Order;
 import ar.edu.itba.bd.models.Phone;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -20,8 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import ar.edu.itba.bd.dto.Supplier;
-import org.bson.types.ObjectId;
 import ar.edu.itba.bd.models.Supplier;
 import org.bson.conversions.Bson;
 
@@ -163,6 +160,22 @@ public class SupplierService {
 
         return suppliersWithRegisterOrderDTOS;
     }
+    //ejercicio 5
+    public List<Supplier> findSuppliersWithoutOrders() {
+        MongoDatabase db = MongoConnection.getDatabase("tp2025");
+        MongoCollection<Document> orders = db.getCollection("order");
+
+        List<String> cuitWithOrders = orders.distinct("supplierId", String.class)
+                .into(new ArrayList<>());
+
+        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
+        for (Document doc : collection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
+            Supplier s = fromDocument(doc);
+            uniqueSuppliers.putIfAbsent(s.id(), s);
+        }
+
+        return new ArrayList<>(uniqueSuppliers.values());
+    }
 
 
     // ------------------------------------ CRUD ------------------------------------
@@ -250,21 +263,7 @@ public class SupplierService {
         return phoneDocs;
     }
 
-    public List<Supplier> findSuppliersWithoutOrders() {
-        MongoDatabase db = MongoConnection.getDatabase("tp2025");
-        MongoCollection<Document> orders = db.getCollection("order");
 
-        List<String> cuitWithOrders = orders.distinct("supplierId", String.class)
-                .into(new ArrayList<>());
-
-        Map<String, Supplier> uniqueSuppliers = new LinkedHashMap<>();
-        for (Document doc : collection.find(new Document("id", new Document("$nin", cuitWithOrders)))) {
-            Supplier s = fromDocument(doc);
-            uniqueSuppliers.putIfAbsent(s.id(), s);
-        }
-
-        return new ArrayList<>(uniqueSuppliers.values());
-    }
 
 }
 
