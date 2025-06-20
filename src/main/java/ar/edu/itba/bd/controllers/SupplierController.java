@@ -1,7 +1,8 @@
 package ar.edu.itba.bd.controllers;
 
-import ar.edu.itba.bd.dto.ApiResponse;
-import ar.edu.itba.bd.dto.Supplier;
+import ar.edu.itba.bd.dto.SupplierWithPhones;
+import ar.edu.itba.bd.models.ApiResponse;
+import ar.edu.itba.bd.models.Supplier;
 import ar.edu.itba.bd.services.SupplierService;
 import io.javalin.http.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,32 @@ public class SupplierController {
 
     private static final SupplierService supplierService = new SupplierService();
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    // ----------------------------------- NEEDS ------------------------------------
+
+    public static void getAllActive(Context ctx) {
+        try {
+            List<Supplier> suppliers = supplierService.findAllActive();
+            //ctx.json(new ApiResponse("Proveedores obtenidos exitosamente"));
+            ctx.json(suppliers);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
+        }
+    }
+
+    public static void getAllFromTech(Context ctx) {
+        try {
+            List<SupplierWithPhones> suppliers = supplierService.findAllPhonesFromTech();
+            ctx.json(new ApiResponse("Proveedores obtenidos exitosamente"));
+            ctx.json(suppliers);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.json(new ApiResponse("Error al obtener proveedores activos: " + e.getMessage()));
+        }
+    }
+
+    // ------------------------------------ CRUD ------------------------------------
 
     public static void getAllSuppliers(Context ctx) {
         try {

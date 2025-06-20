@@ -21,6 +21,10 @@ public class Main {
         app.put("/suppliers/{id}", SupplierController::updateSupplier);
         app.delete("/suppliers/{id}", SupplierController::deleteSupplier);
 
+        // need
+        app.get("/suppliers/phonesFromActive", SupplierController::getAllActive);
+        app.get("/suppliers/phonesFromTech", SupplierController::getAllFromTech);
+
         // Order routes
         app.get("/orders", OrderController::getAllOrders);
         app.get("/orders/{id}", OrderController::getOrderById);

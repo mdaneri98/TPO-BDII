@@ -1,7 +1,7 @@
 package ar.edu.itba.bd.controllers;
 
-import ar.edu.itba.bd.dto.ApiResponse;
-import ar.edu.itba.bd.dto.Product;
+import ar.edu.itba.bd.models.ApiResponse;
+import ar.edu.itba.bd.models.Product;
 import ar.edu.itba.bd.services.ProductService;
 import io.javalin.http.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;

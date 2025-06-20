@@ -1,4 +1,4 @@
-package ar.edu.itba.bd.dto;
+package ar.edu.itba.bd.models;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 public record Order(
     String id,
     String supplierId,
-    LocalDate date,
+    String date,
     double totalWithoutTax,
     double tax,
     List<OrderDetail> orderDetails

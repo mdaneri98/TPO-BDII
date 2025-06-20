@@ -1,10 +1,14 @@
 package ar.edu.itba.bd.services;
 
 import ar.edu.itba.bd.database.MongoConnection;
-import ar.edu.itba.bd.dto.Product;
+import ar.edu.itba.bd.models.Product;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +28,46 @@ public class ProductService {
         }
         return products;
     }
+
+    // ----------------------------------- NEEDS ------------------------------------
+
+    //ejercicio 8
+    public List<Product> findAllWithAtLeastOneOrder() {
+
+        List<Bson> pipeline = List.of(
+                Aggregates.lookup("orders", "id", "orderDetails.productId", "orders"),
+                /*
+                    {
+                      "id": "P1",
+                      "name": "Producto 1",
+                      "orders": [
+                        {
+                          "_id": "O1",
+                          "orderDetails": [
+                            { "productId": "P1", "quantity": 3 },
+                            { "productId": "P2", "quantity": 1 }
+                          ]
+                        }
+                      ]
+                    }
+                * */
+                Aggregates.match(Filters.expr(
+                        new Document("$gt", List.of(new Document("$size", "$orders"), 0))
+                ))
+        );
+
+        List<Product> products = new ArrayList<>();
+        collection.aggregate(pipeline).forEach(doc -> {
+            products.add(fromDocument(doc));
+        });
+
+        return products;
+    }
+
+
+
+
+    // ------------------------------------ CRUD ------------------------------------
 
     public Product findById(String id) {
         Document doc = collection.find(new Document("id", id)).first();
