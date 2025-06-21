@@ -1,53 +1,16 @@
 {
-  "name": "TPO-BDII Development Environment",
+  "name": "TPO-BDII",
   "image": "mcr.microsoft.com/devcontainers/java:1-17-bullseye",
   
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "dockerDashComposeVersion": "v2"
-    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
     "ghcr.io/devcontainers/features/java:1": {
       "version": "17",
       "installMaven": "true"
     }
   },
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "vscjava.vscode-java-pack",
-        "ms-vscode.vscode-json",
-        "redhat.vscode-xml",
-        "ms-azuretools.vscode-docker"
-      ],
-      "settings": {
-        "java.configuration.runtimes": [
-          {
-            "name": "JavaSE-17",
-            "path": "/usr/local/sdkman/candidates/java/current"
-          }
-        ],
-        "java.compile.nullAnalysis.mode": "disabled"
-      }
-    }
-  },
-
   "forwardPorts": [7000, 27017, 6379],
-  "portsAttributes": {
-    "7000": {
-      "label": "TPO-BDII API",
-      "onAutoForward": "notify"
-    },
-    "27017": {
-      "label": "MongoDB"
-    },
-    "6379": {
-      "label": "Redis"
-    }
-  },
-
-  "postCreateCommand": "chmod +x start-app.sh && chmod +x codespaces-start.sh",
   
-  "remoteUser": "vscode"
+  "postCreateCommand": "chmod +x codespaces-start.sh"
 } 
