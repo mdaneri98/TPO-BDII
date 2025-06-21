@@ -1,11 +1,25 @@
 #!/bin/bash
 
+# Auto-fix permisos
+chmod +x "$0" 2>/dev/null
+
 echo "🚀 Iniciando TPO-BDII en GitHub Codespaces..."
 
 # Verificar Docker
 if ! command -v docker &> /dev/null; then
-    echo "❌ Docker no disponible"
-    exit 1
+    echo "❌ Docker no disponible. Esperando inicialización..."
+    sleep 10
+    if ! command -v docker &> /dev/null; then
+        echo "❌ Docker aún no disponible. Reinicia el codespace."
+        exit 1
+    fi
+fi
+
+# Verificar servicio Docker
+if ! docker info &> /dev/null; then
+    echo "⏳ Iniciando servicio Docker..."
+    sudo service docker start 2>/dev/null || true
+    sleep 5
 fi
 
 # Limpiar contenedores anteriores
