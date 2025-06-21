@@ -1,19 +1,28 @@
 {
-  "name": "TPO-BDII",
+  "name": "TPO-BDII Java Project",
   "image": "mcr.microsoft.com/devcontainers/java:1-17-bullseye",
   
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "dockerDashComposeVersion": "v2"
-    },
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17",
-      "installMaven": "true"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack"
+      ]
     }
   },
 
   "forwardPorts": [7000, 27017, 6379],
+  "portsAttributes": {
+    "7000": {
+      "label": "TPO-BDII API"
+    }
+  },
   
-  "postCreateCommand": "chmod +x codespaces-start.sh"
+  "postCreateCommand": "chmod +x start-app.sh codespaces-start.sh"
 } 
