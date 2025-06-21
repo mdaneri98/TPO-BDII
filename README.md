@@ -26,6 +26,11 @@ chmod +x start-app.sh
 ./start-app.sh
 ```
 
+### GitHub Codespaces
+```bash
+# Para Codespaces usar el script optimizado
+./codespaces-start.sh
+```
 
 ### Verificar funcionamiento
 ```bash
